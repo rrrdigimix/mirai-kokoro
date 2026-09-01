@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biblioteca Mirai — V2 Conectada</title>
+<style>
+:root{
+  --mirai:#557b91; --mirai-dark:#36596d; --olive:#8b9270;
+  --cream:#f6f4ee; --paper:#fff; --ink:#29343a; --muted:#718087; --line:#e3e6e2;
+}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:var(--cream);color:var(--ink)}
+header{background:var(--paper);border-bottom:1px solid var(--line);padding:18px 22px;position:sticky;top:0;z-index:3}
+.brand{display:flex;align-items:center;gap:12px;max-width:980px;margin:auto}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--mirai);display:grid;place-items:center}
+.logo svg{width:25px;height:25px;stroke:white}
+.brand h1{font-size:18px;margin:0}.brand small{color:var(--muted)}
+main{max-width:980px;margin:auto;padding:24px 18px 60px}
+.top{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+button{font:inherit}
+.filter{border:1px solid var(--line);background:white;padding:10px 14px;border-radius:999px;cursor:pointer}
+.filter.active{background:var(--mirai);color:white;border-color:var(--mirai)}
+.search{flex:1;min-width:220px;border:1px solid var(--line);background:white;padding:11px 15px;border-radius:999px}
+.encounter{background:white;border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:16px;box-shadow:0 6px 24px rgba(0,0,0,.035)}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--olive);font-weight:bold}
+h2{margin:6px 0 4px;font-size:24px}.desc{color:var(--muted);margin:0 0 18px}
+.quick{display:flex;gap:10px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:thin}
+.quick a{min-width:132px;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:13px;background:#fbfbf9;display:flex;align-items:center;gap:9px}
+.quick svg{width:22px;height:22px;stroke:var(--mirai-dark);flex:none}
+.quick a:nth-child(even) svg{stroke:var(--olive)} .quick a small{font-size:11px;color:var(--muted)}
+.section{scroll-margin-top:100px;border-top:1px solid var(--line);padding-top:18px;margin-top:14px}
+.resource{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #eef0ed}
+.ricon{width:44px;height:44px;border-radius:13px;background:#eef3f5;display:grid;place-items:center;flex:none}
+.ricon svg{width:23px;height:23px;stroke:var(--mirai-dark)}
+.rtext{flex:1}.rtext b{display:block}.rtext small{color:var(--muted)}
+.action{border:0;border-radius:10px;background:var(--mirai);color:white;padding:9px 12px;cursor:pointer}
+.backtop{display:inline-block;margin-top:14px;color:var(--mirai-dark);text-decoration:none;font-size:13px}
+.note{background:#f0f1e8;border-radius:14px;padding:12px 14px;color:#5f654d;font-size:13px;margin-top:18px}
+@media(max-width:600px){h2{font-size:21px}.encounter{padding:17px}.action{padding:8px 9px}.resource{align-items:flex-start}}
+</style>
+</head>
+<body id="top">
+<header>
+ <div class="brand">
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 5.5c3-1 5.5-.4 8 1.5v12c-2.5-1.9-5-2.5-8-1.5z"/><path d="M20 5.5c-3-1-5.5-.4-8 1.5v12c2.5-1.9 5-2.5 8-1.5z"/></svg></div>
+  <div><h1>Biblioteca Mirai</h1><small>Espaço do Facilitador</small></div>
+ </div>
+</header>
+<main>
+ <div class="top">
+   <button class="filter active" data-age="11–14 anos">11–14 anos</button><button class="filter" data-age="6–10 anos">6–10 anos</button>
+   <select id="virtude" class="search" aria-label="Escolher virtude">
+         <option value="1">1. Humildade</option>
+<option value="2">2. Abnegação</option>
+<option value="3">3. Individuação</option>
+<option value="4">4. Perdão</option>
+<option value="5">5. Utilidade</option>
+<option value="6">6. Igualdade</option>
+<option value="7">7. Fraternidade</option>
+<option value="8">8. Ajuda ao Próximo</option>
+<option value="9">9. Gratidão</option>
+<option value="10">10. Busca do Melhoramento</option>
+<option value="11">11. Não Julgamento</option>
+         </select>
+   <select id="encontro" class="search" aria-label="Escolher encontro">
+     <option value="1">Encontro 1</option>
+     <option value="2">Encontro 2 — Consolidação</option>
+   </select>
+   <input id="busca" class="search" placeholder="Buscar encontro ou material…" autocomplete="off">
+ </div>
+
+ <article class="encounter">
+  <div class="eyebrow" id="encounterMeta"></div>
+  <h2 id="encounterTitle"></h2>
+  <p class="desc" id="encounterDesc"></p>
+
+  <nav class="quick">
+   <a href="#pdf"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/></svg><span>PDF do encontro</span></a>
+   <a href="#audio"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 14v-4a8 8 0 0116 0v4"/><path d="M4 13h3v7H4zM17 13h3v7h-3z"/></svg><span>Áudio</span></a>
+   <a href="#cards"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="5" width="13" height="15" rx="2"/><path d="M8 2h12v15"/></svg><span><span>Treinando Virtudes<br><small>Todos os Dias</small></span></a>
+   <a href="#impressao"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3"/><path d="M7 14h10v7H7z"/></svg><span>Para imprimir</span></a>
+   <a href="#video"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><span>Vídeo</span></a>
+  </nav>
+
+  <section class="section" id="pdf">
+   <div class="eyebrow">PDF do encontro</div>
+   <div class="resource"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/></svg></div><div class="rtext"><b>Guia do Facilitador</b><small>Encontro completo • PDF</small></div><button class="action">Abrir</button></div>
+  </section>
+
+  <section class="section" id="audio">
+   <div class="eyebrow">Áudio</div>
+   <div class="resource"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 14v-4a8 8 0 0116 0v4"/><path d="M4 13h3v7H4zM17 13h3v7h-3z"/></svg></div><div class="rtext"><b>Respiração consciente</b><small>Prática guiada do encontro</small></div><button class="action">Ouvir</button></div>
+  </section>
+
+  <section class="section" id="cards">
+   <div class="eyebrow">Treinando Virtudes Todos os Dias</div>
+   <div class="resource"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="5" width="13" height="15" rx="2"/><path d="M8 2h12v15"/></svg></div><div class="rtext"><b>Treinando Virtudes Todos os Dias</b><small>Material complementar do encontro • PDF</small></div><button class="action">Abrir</button></div>
+  </section>
+
+  <section class="section" id="impressao">
+   <div class="eyebrow">Materiais para impressão</div>
+   <div class="resource"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3"/><path d="M7 14h10v7H7z"/></svg></div><div class="rtext"><b>Materiais da dinâmica</b><small>Arquivos preparados para impressão</small></div><button class="action">Imprimir</button></div>
+  </section>
+
+  <section class="section" id="video">
+   <div class="eyebrow">Vídeo</div>
+   <div class="resource"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg></div><div class="rtext"><b>Recurso complementar</b><small>Vídeo relacionado ao encontro</small></div><button class="action">Assistir</button></div>
+  </section>
+
+  <a class="backtop" href="#top">↑ Voltar aos atalhos</a>
+  <div class="note" id="firebaseStatus">Conectando à Biblioteca Mirai…</div>
+ </article>
+</main>
+
+
+
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyCuUQi_s4v0Iat3FkzEfY06lX1NIaDAJ3Y",
+ authDomain:"mirai-kokoro.firebaseapp.com",
+ projectId:"mirai-kokoro",
+ storageBucket:"mirai-kokoro.firebasestorage.app",
+ messagingSenderId:"601277675162",
+ appId:"1:601277675162:web:b2ab41cbb4709b008a9123"
+};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app), db=getFirestore(app);
+
+const ageButtons=[...document.querySelectorAll('[data-age]')];
+const virtue=document.getElementById('virtude');
+const meeting=document.getElementById('encontro');
+const meta=document.getElementById('encounterMeta');
+const title=document.getElementById('encounterTitle');
+const desc=document.getElementById('encounterDesc');
+const busca=document.getElementById('busca');
+const statusBox=document.getElementById('firebaseStatus');
+let records=[];
+
+const lists={
+ '6–10 anos':['Humildade','Abnegação','Perseverança','Responsabilidade','Paciência','Honestidade','Não Julgamento','Gratidão','Bom Humor','Otimismo','Cuidado com o Corpo','Amor à Natureza e aos Animais','Ajuda ao Próximo','Perdão','Reconciliação','Honrar a Família'],
+ '11–14 anos':['Humildade','Abnegação','Individuação','Perdão','Utilidade','Igualdade','Fraternidade','Ajuda ao Próximo','Gratidão','Busca do Melhoramento','Não Julgamento']
+};
+const sectionMap={
+ 'Guia do Facilitador':'pdf',
+ 'Áudio':'audio',
+ 'Treinando Virtudes Todos os Dias':'cards',
+ 'Material para impressão':'impressao',
+ 'Materiais para impressão':'impressao',
+ 'Vídeo':'video'
+};
+function currentAge(){return document.querySelector('[data-age].active')?.dataset.age || '11–14 anos';}
+function selectedRecords(){
+ return records.filter(r=>r.faixaEtaria===currentAge() && r.virtude===virtue.value && Number(r.encontro)===Number(meeting.value) && r.status==='publicado');
+}
+function renderResources(){
+ const selected=selectedRecords();
+ document.querySelectorAll('.section').forEach(sec=>{
+   const old=sec.querySelector('.resource');
+   if(old) old.remove();
+ });
+ selected.forEach(r=>{
+   const sid=sectionMap[r.materialTipo] || 'pdf';
+   const sec=document.getElementById(sid); if(!sec) return;
+   const row=document.createElement('div'); row.className='resource';
+   const icon=document.createElement('div'); icon.className='ricon'; icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/></svg>';
+   const txt=document.createElement('div'); txt.className='rtext';
+   const b=document.createElement('b'); b.textContent=r.titulo || r.materialTipo || 'Material';
+   const sm=document.createElement('small'); sm.textContent=r.descricao || (r.nomeArquivo ? r.nomeArquivo : `${r.virtude} • Encontro ${r.encontro}`);
+   txt.append(b,sm); row.append(icon,txt);
+   if(r.link){ const bt=document.createElement('button'); bt.className='action'; bt.textContent=sid==='audio'?'Ouvir':sid==='video'?'Assistir':'Abrir'; bt.onclick=()=>window.open(r.link,'_blank','noopener'); row.append(bt); }
+   sec.append(row);
+ });
+ document.querySelectorAll('.section').forEach(sec=>{
+   if(!sec.querySelector('.resource')){
+     const empty=document.createElement('div'); empty.className='resource';
+     empty.innerHTML='<div class="rtext"><small>Nenhum material publicado nesta seção.</small></div>';
+     sec.append(empty);
+   }
+ });
+ statusBox.textContent=selected.length ? `${selected.length} conteúdo(s) V2 carregado(s) do Firebase para esta seleção.` : 'Nenhum conteúdo V2 publicado para esta seleção.';
+}
+function render(){
+ const a=currentAge(), v=virtue.value, e=meeting.value;
+ meta.textContent=(v+' • Encontro '+e).toUpperCase();
+ title.textContent=(a==='11–14 anos' && v==='Abnegação' && e==='2') ? 'Cultivando Espaço para o Outro' : v+' — Encontro '+e;
+ desc.textContent=(a==='11–14 anos' && v==='Abnegação' && e==='2') ? 'Neste encontro, os adolescentes exploram como considerar o outro sem apagar aquilo que é importante para si.' : 'Conteúdo de '+v+' — Encontro '+e+'. Os materiais desta área pertencem exclusivamente a esta escolha.';
+ renderResources();
+}
+function fill(){
+ const a=currentAge();
+ virtue.innerHTML=lists[a].map((v,i)=>`<option value="${v}">${i+1}. ${v}</option>`).join('');
+ render();
+}
+ageButtons.forEach(btn=>btn.onclick=function(){ageButtons.forEach(b=>b.classList.remove('active')); this.classList.add('active'); fill();});
+virtue.onchange=render; meeting.onchange=render;
+busca.addEventListener('input',()=>{
+ const q=busca.value.trim().toLowerCase();
+ document.querySelectorAll('.resource').forEach(row=>{row.style.display=!q || row.textContent.toLowerCase().includes(q)?'flex':'none';});
+});
+
+fill(); if([...virtue.options].some(o=>o.value==='Abnegação')) virtue.value='Abnegação'; meeting.value='2'; render();
+
+onAuthStateChanged(auth,async user=>{
+ if(!user){ statusBox.textContent='Faça login primeiro no aplicativo atual para acessar a Biblioteca V2.'; return; }
+ try{
+   const q=query(collection(db,'conteudo'),where('tipo','==','biblioteca_v2_teste'));
+   const snap=await getDocs(q);
+   records=snap.docs.map(d=>({id:d.id,...d.data()}));
+   render();
+ }catch(err){
+   console.error(err);
+   statusBox.textContent='Não foi possível carregar a Biblioteca V2. Nenhuma alteração foi feita no aplicativo atual.';
+ }
+});
+</script>
+</body></html>
