@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mirai Admin — Biblioteca</title>
+<style>
+:root{--blue:#557b91;--dark:#36596d;--olive:#8b9270;--cream:#f6f4ee;--line:#ddd7c9}
+*{box-sizing:border-box} body{margin:0;background:var(--cream);font-family:Arial,sans-serif;color:#26343c}
+header{background:white;border-bottom:1px solid var(--line);padding:22px 18px}
+.head{max-width:760px;margin:auto;display:flex;gap:13px;align-items:center}.icon{width:46px;height:46px;border-radius:13px;background:var(--blue);display:grid;place-items:center}
+.icon svg{width:27px;stroke:white}.head h1{margin:0;color:var(--dark);font-size:23px}.head small{color:#75838b}
+main{max-width:760px;margin:auto;padding:22px 16px 60px}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+h2{font-size:18px;color:var(--dark);margin:0 0 16px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}label{display:block;font-size:11px;font-weight:700;color:var(--olive);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px}
+select,input,textarea{width:100%;padding:13px;border:1px solid var(--line);border-radius:11px;background:white;font:inherit}textarea{resize:vertical;min-height:85px}
+.file{border:1px dashed #aeb9b0;border-radius:12px;padding:17px;text-align:center;color:#68777f;background:#fafaf8}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}.btn{border:0;border-radius:11px;padding:12px 16px;font-weight:700}.secondary{background:#edf1f2;color:var(--dark)}.primary{background:var(--blue);color:white}
+.preview{padding:13px;border-radius:12px;background:#f4f6f2;margin-top:12px;font-size:14px}.preview b{color:var(--dark)}
+.item{border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:10px;background:#fff}.itemTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.itemTitle{font-weight:700;color:var(--dark);margin-bottom:4px}.meta{font-size:12px;color:#728089;line-height:1.5}.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700;background:#eef2ea;color:#687052}.badge.hidden{background:#f1eeee;color:#8a6868}.itemActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.mini{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:#fafaf8;color:var(--dark);font-weight:700;cursor:pointer}.danger{color:#955c5c}.loading{opacity:.65;font-size:14px}.editing{outline:2px solid #cbd7dc}.notice{font-size:12px;color:#6f7c82;margin-top:8px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.itemTop{flex-direction:column}}
+
+.driveSetup{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#f8faf8;text-align:left}
+.driveSetup summary{cursor:pointer;font-weight:700;color:var(--dark)}
+.driveSetup p{font-size:12px;color:#6f7c82;line-height:1.45}.driveSetup input{margin-top:7px}
+</style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
+</head>
+<body>
+<header><div class="head"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 5c4-1 7 0 8 2v13c-1-2-4-3-8-2z"/><path d="M20 5c-4-1-7 0-8 2v13c1-2 4-3 8-2z"/></svg></div><div><h1>Admin Mirai</h1><small>Gerenciamento V2 • Biblioteca do Facilitador</small></div></div></header>
+<main>
+<section class="card"><h2 id="formHeading">Novo conteúdo</h2><div class="grid">
+<div><label>Faixa etária</label><select id="age"><option>6–10 anos</option><option selected>11–14 anos</option></select></div>
+<div><label>Virtude</label><select id="virtue"></select></div>
+<div><label>Encontro</label><select id="meeting"><option value="1">Encontro 1</option><option value="2" selected>Encontro 2 — Consolidação</option></select></div>
+<div><label>Tipo de material</label><select id="type"><option>Guia do Facilitador — PDF</option><option>Áudio</option><option>Treinando Virtudes Todos os Dias</option><option>Material para impressão</option><option>Vídeo</option></select></div>
+<div class="full"><label>Título</label><input id="title" placeholder="Ex.: Guia do Facilitador"></div>
+<div class="full"><label>Descrição curta</label><textarea id="description" placeholder="Descrição que aparecerá para o facilitador"></textarea></div>
+<div class="full"><label>Adicionar arquivo</label>
+<div class="file">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+    <button type="button" class="btn secondary" id="driveFile">Google Drive</button>
+    <button type="button" class="btn secondary" id="chooseFile">Meu dispositivo</button>
+  </div>
+  <input id="fileInput" type="file" accept=".pdf,.mp3,.m4a,.wav,.mp4,.mov,image/*" style="display:none">
+  <div id="fileName" style="margin-top:11px;font-size:13px;">Nenhum arquivo selecionado</div>
+  <details class="driveSetup" id="driveSetup">
+    <summary>Configuração Google Drive do projeto</summary>
+    <p>Informe estes dados uma única vez. Eles serão salvos na configuração do projeto no Firebase e carregados automaticamente em outros computadores autorizados.</p>
+    <input id="googleClientId" autocomplete="off" placeholder="ID do cliente OAuth">
+    <input id="googleApiKey" autocomplete="off" placeholder="Chave de API Google">
+    <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap"><button type="button" class="mini" id="saveGoogleConfig">Salvar configuração</button><button type="button" class="mini danger" id="clearGoogleConfig">Remover configuração</button></div>
+  </details>
+</div></div>
+<div><label>Status</label><select id="status"><option>Publicado</option><option>Oculto</option></select></div>
+</div>
+<div class="preview" id="preview"></div>
+<div class="actions"><button class="btn secondary" id="cancelEdit" type="button">Limpar</button><button class="btn primary" id="save">Salvar conteúdo</button></div>
+<div class="notice">Nesta etapa, o Google Drive pode ser selecionado diretamente. Arquivos escolhidos em “Meu dispositivo” ainda não são enviados; esse envio será configurado depois.</div>
+</section>
+<section class="card">
+<h2>Conteúdos cadastrados</h2>
+<div id="savedList"><div class="loading">Carregando conteúdos V2…</div></div>
+</section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyCuUQi_s4v0Iat3FkzEfY06lX1NIaDAJ3Y",
+ authDomain:"mirai-kokoro.firebaseapp.com",
+ projectId:"mirai-kokoro",
+ storageBucket:"mirai-kokoro.firebasestorage.app",
+ messagingSenderId:"601277675162",
+ appId:"1:601277675162:web:b2ab41cbb4709b008a9123"
+};
+const ADMIN_UID="4jnMbmwV2JbSmKkzcJLBum7ybyK2";
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app), db=getFirestore(app);
+let adminOk=false, editingId=null, records=[];
+let pickerLoaded=false, tokenClient=null, accessToken=null, selectedDriveFile=null;
+const GOOGLE_CONFIG_DOC="google_drive_v2";
+let googleCfg={clientId:"",apiKey:""};
+
+const lists={
+"6–10 anos":["Humildade","Abnegação","Perseverança","Responsabilidade","Paciência","Honestidade","Não Julgamento","Gratidão","Bom Humor","Otimismo","Cuidado com o Corpo","Amor à Natureza e aos Animais","Ajuda ao Próximo","Perdão","Reconciliação","Honrar a Família"],
+"11–14 anos":["Humildade","Abnegação","Individuação","Perdão","Utilidade","Igualdade","Fraternidade","Ajuda ao Próximo","Gratidão","Busca do Melhoramento","Não Julgamento"]
+};
+const $=id=>document.getElementById(id);
+const age=$("age"),virtue=$("virtue"),meeting=$("meeting"),type=$("type"),preview=$("preview"),status=$("status");
+const fileInput=$("fileInput"),fileName=$("fileName"),save=$("save"),savedList=$("savedList");
+
+function fill(){
+ const old=virtue.value;
+ virtue.innerHTML=lists[age.value].map((v,i)=>`<option value="${v}">${i+1}. ${v}</option>`).join("");
+ virtue.value=lists[age.value].includes(old)?old:"Abnegação";
+ update();
+}
+function update(){
+ preview.innerHTML=`Destino V2: <b>${age.value} → ${virtue.value} → Encontro ${meeting.value} → ${type.value}</b><br>Status: <b>${status.value}</b>`;
+}
+function clearForm(){
+ editingId=null;
+ $("formHeading").textContent="Novo conteúdo";
+ save.textContent=adminOk?"Salvar conteúdo":"Entre primeiro no Admin atual";
+ $("title").value=""; $("description").value="";
+ fileInput.value=""; selectedDriveFile=null; fileName.textContent="Nenhum arquivo selecionado";
+ document.querySelector('.card').classList.remove('editing');
+ update();
+}
+function esc(s){return String(s??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]))}
+function renderList(){
+ if(!records.length){savedList.innerHTML='<div class="loading">Nenhum conteúdo V2 cadastrado.</div>';return}
+ const ordered=[...records].sort((a,b)=>(a.faixaEtaria||'').localeCompare(b.faixaEtaria||'')||(a.virtude||'').localeCompare(b.virtude||'')||Number(a.encontro||0)-Number(b.encontro||0));
+ savedList.innerHTML=ordered.map(r=>`<div class="item" data-id="${r.id}">
+   <div class="itemTop"><div><div class="itemTitle">${esc(r.titulo||'Sem título')}</div>
+   <div class="meta">${esc(r.faixaEtaria)} • ${esc(r.virtude)} • Encontro ${esc(r.encontro)}<br>${esc(r.materialTipo||'Material')}</div></div>
+   <span class="badge ${r.status==='oculto'?'hidden':''}">${r.status==='oculto'?'Oculto':'Publicado'}</span></div>
+   ${r.descricao?`<div class="meta" style="margin-top:8px">${esc(r.descricao)}</div>`:''}
+   <div class="itemActions">
+    <button class="mini" data-action="edit">Editar</button>
+    <button class="mini" data-action="toggle">${r.status==='oculto'?'Publicar':'Ocultar'}</button>
+    <button class="mini danger" data-action="delete">Excluir</button>
+   </div></div>`).join('');
+}
+async function loadRecords(){
+ if(!adminOk) return;
+ savedList.innerHTML='<div class="loading">Carregando conteúdos V2…</div>';
+ try{
+   const q=query(collection(db,'conteudo'),where('tipo','==','biblioteca_v2_teste'));
+   const snap=await getDocs(q);
+   records=snap.docs.map(d=>({id:d.id,...d.data()}));
+   renderList();
+ }catch(e){console.error(e); savedList.innerHTML='<div class="loading">Não foi possível carregar os conteúdos.</div>'}
+}
+$("chooseFile").onclick=()=>fileInput.click();
+
+async function loadGoogleCfg(){
+ try{
+   const snap=await getDoc(doc(db,'configuracoes',GOOGLE_CONFIG_DOC));
+   googleCfg=snap.exists()?snap.data():{clientId:"",apiKey:""};
+   $("googleClientId").value=googleCfg.clientId||"";
+   $("googleApiKey").value=googleCfg.apiKey||"";
+   if(googleCfg.clientId && googleCfg.apiKey) $("driveSetup").open=false;
+ }catch(e){console.error(e);}
+}
+$("saveGoogleConfig").onclick=async()=>{
+ if(!adminOk){alert("Entre primeiro no Admin atual.");return}
+ const clientId=$("googleClientId").value.trim(), apiKey=$("googleApiKey").value.trim();
+ if(!clientId||!apiKey){alert("Preencha o ID do cliente OAuth e a chave de API.");return}
+ try{
+   await setDoc(doc(db,'configuracoes',GOOGLE_CONFIG_DOC),{clientId,apiKey,atualizadoEm:serverTimestamp()},{merge:true});
+   googleCfg={clientId,apiKey}; tokenClient=null; accessToken=null;
+   alert("Configuração Google Drive salva no projeto. Ela será carregada automaticamente em outros computadores.");
+   $("driveSetup").open=false;
+ }catch(e){console.error(e);alert("Não foi possível salvar a configuração.");}
+};
+$("clearGoogleConfig").onclick=async()=>{
+ if(!adminOk){alert("Entre primeiro no Admin atual.");return}
+ if(!confirm("Remover a configuração Google Drive do projeto?")) return;
+ try{
+   await setDoc(doc(db,'configuracoes',GOOGLE_CONFIG_DOC),{clientId:"",apiKey:"",atualizadoEm:serverTimestamp()},{merge:true});
+   googleCfg={clientId:"",apiKey:""}; $("googleClientId").value=""; $("googleApiKey").value=""; tokenClient=null; accessToken=null;
+   alert("Configuração removida do projeto.");
+ }catch(e){console.error(e);alert("Não foi possível remover a configuração.");}
+};
+
+function ensurePickerLoaded(){return new Promise((resolve,reject)=>{
+ if(pickerLoaded) return resolve();
+ if(!window.gapi) return reject(new Error("Biblioteca Google ainda não carregou. Atualize a página e tente novamente."));
+ gapi.load('picker',{callback:()=>{pickerLoaded=true;resolve();},onerror:()=>reject(new Error("Não foi possível carregar o Google Picker."))});
+});}
+function showPicker(apiKey){
+ const view=new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(false);
+ const picker=new google.picker.PickerBuilder().addView(view).setOAuthToken(accessToken).setDeveloperKey(apiKey).setCallback(data=>{
+   if(data.action===google.picker.Action.PICKED && data.docs?.[0]){
+     const d=data.docs[0]; selectedDriveFile={id:d.id,name:d.name,mimeType:d.mimeType,url:d.url||""};
+     fileInput.value=""; fileName.textContent=`Google Drive: ${d.name}`;
+   }
+ }).build(); picker.setVisible(true);
+}
+async function openDrivePicker(){
+ const {clientId,apiKey}=googleCfg;
+ if(!clientId||!apiKey){$("driveSetup").open=true; alert("Primeiro salve a configuração Google Drive do projeto."); return}
+ try{
+   await ensurePickerLoaded();
+   if(!window.google?.accounts?.oauth2) throw new Error("A autorização Google ainda não carregou. Atualize a página e tente novamente.");
+   if(!tokenClient){tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:'https://www.googleapis.com/auth/drive.readonly',callback:(resp)=>{
+     if(resp.error){console.error(resp);alert("O Google não autorizou o acesso ao Drive.");return}
+     accessToken=resp.access_token; showPicker(apiKey);
+   }});}
+   if(accessToken) showPicker(apiKey); else tokenClient.requestAccessToken({prompt:'consent'});
+ }catch(e){console.error(e);alert(e.message||"Não foi possível abrir o Google Drive.");}
+}
+$("driveFile").onclick=openDrivePicker;
+fileInput.onchange=()=>{selectedDriveFile=null; fileName.textContent=fileInput.files[0]?.name || "Nenhum arquivo selecionado";};
+
+$("cancelEdit").onclick=clearForm;
+[age,virtue,meeting,type,status].forEach(x=>x.addEventListener("change",()=>x===age?fill():update()));
+
+onAuthStateChanged(auth,user=>{
+ adminOk=!!(user && user.uid===ADMIN_UID);
+ save.disabled=!adminOk;
+ save.textContent=adminOk?"Salvar conteúdo":"Entre primeiro no Admin atual";
+ if(!adminOk) preview.innerHTML="Abra primeiro o Admin atual e faça login. Depois volte para esta página.";
+ else { loadGoogleCfg(); loadRecords(); }
+});
+
+save.onclick=async()=>{
+ if(!adminOk) return;
+ const titulo=$("title").value.trim(), descricao=$("description").value.trim();
+ if(!titulo){alert("Preencha o título.");return}
+ save.disabled=true; save.textContent="Salvando…";
+ const payload={
+   tipo:"biblioteca_v2_teste", categoria:"biblioteca-v2-teste", materialTipo:type.value,
+   titulo, descricao, faixaEtaria:age.value, virtude:virtue.value, encontro:Number(meeting.value),
+   status:status.value.toLowerCase(), versao:2, teste:true,
+   nomeArquivo:selectedDriveFile?.name || fileInput.files[0]?.name || (editingId?(records.find(r=>r.id===editingId)?.nomeArquivo||""):""),
+   driveFileId:selectedDriveFile?.id || (editingId?(records.find(r=>r.id===editingId)?.driveFileId||""):""),
+   driveMimeType:selectedDriveFile?.mimeType || (editingId?(records.find(r=>r.id===editingId)?.driveMimeType||""):""),
+   origemArquivo:selectedDriveFile?"google_drive":(fileInput.files[0]?"dispositivo":(editingId?(records.find(r=>r.id===editingId)?.origemArquivo||""):"")),
+   link:editingId?(records.find(r=>r.id===editingId)?.link||""):""
+ };
+ try{
+   if(editingId){
+     await updateDoc(doc(db,'conteudo',editingId),payload);
+     alert("Conteúdo V2 atualizado com sucesso.");
+   }else{
+     await addDoc(collection(db,'conteudo'),{...payload,criadoEm:serverTimestamp()});
+     alert("Conteúdo V2 salvo com sucesso.");
+   }
+   clearForm(); await loadRecords();
+ }catch(err){console.error(err); alert("Não foi possível salvar. Nenhuma alteração foi feita no aplicativo atual.");}
+ finally{save.disabled=!adminOk; if(!editingId) save.textContent=adminOk?"Salvar conteúdo":"Entre primeiro no Admin atual"}
+};
+
+savedList.addEventListener('click',async e=>{
+ const btn=e.target.closest('button[data-action]'); if(!btn||!adminOk) return;
+ const item=btn.closest('.item'), id=item?.dataset.id, r=records.find(x=>x.id===id); if(!r) return;
+ const action=btn.dataset.action;
+ if(action==='edit'){
+   editingId=id; age.value=r.faixaEtaria||'11–14 anos'; fill(); virtue.value=r.virtude||'Abnegação';
+   meeting.value=String(r.encontro||2); type.value=r.materialTipo||'Guia do Facilitador — PDF';
+   $("title").value=r.titulo||''; $("description").value=r.descricao||''; status.value=r.status==='oculto'?'Oculto':'Publicado';
+   fileName.textContent=r.nomeArquivo||'Nenhum arquivo selecionado'; $("formHeading").textContent='Editar conteúdo';
+   save.textContent='Salvar alterações'; document.querySelector('.card').classList.add('editing'); update(); window.scrollTo({top:0,behavior:'smooth'}); return;
+ }
+ if(action==='toggle'){
+   const next=r.status==='oculto'?'publicado':'oculto';
+   try{await updateDoc(doc(db,'conteudo',id),{status:next}); await loadRecords();}catch(err){console.error(err);alert('Não foi possível alterar o status.');} return;
+ }
+ if(action==='delete'){
+   if(!confirm(`Excluir definitivamente “${r.titulo||'este conteúdo'}” da V2?`)) return;
+   try{await deleteDoc(doc(db,'conteudo',id)); if(editingId===id) clearForm(); await loadRecords(); alert('Conteúdo V2 excluído.');}catch(err){console.error(err);alert('Não foi possível excluir.');}
+ }
+});
+fill();
+</script>
+
+</body></html>
