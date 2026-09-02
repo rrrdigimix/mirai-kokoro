@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4a90d9">
+<link rel="apple-touch-icon" href="icon-192.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mirai Kokoro - Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<style id="mirai-modern-v3">
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+:root{--navy:#263b54;--navy2:#1f3147;--olive:#8f9272;--paper:#f8f6f0;--card:#fffdfa;--line:#e4e0d5;--text:#29323b;--muted:#726f67}
+*{box-sizing:border-box} body{font-family:'Montserrat',sans-serif!important;background:linear-gradient(180deg,#f7f4ed 0,#fbfaf7 100%)!important;color:var(--text)!important;margin:0!important;padding:24px 14px!important}
+#conteudo-pagina{width:min(1050px,100%)!important;max-width:1050px!important;margin:0 auto!important;background:rgba(255,255,255,.92)!important;border:1px solid var(--line)!important;border-radius:24px!important;box-shadow:0 16px 50px rgba(38,59,84,.10)!important;padding:28px!important;gap:18px!important}
+#conteudo-pagina>a:first-child{display:flex!important;align-items:center!important;gap:14px!important;text-decoration:none!important;border-bottom:1px solid var(--line)!important;padding-bottom:18px!important;margin-bottom:2px!important}
+#conteudo-pagina>a:first-child img{width:58px!important;height:58px!important;object-fit:contain!important;border-radius:50%!important}
+#conteudo-pagina>a:first-child p{font-family:'Cormorant Garamond',serif!important;font-size:27px!important;font-weight:700!important;letter-spacing:.2px!important;color:var(--navy)!important}
+#conteudo-pagina>div:nth-of-type(1){display:flex!important;gap:8px!important;overflow-x:auto!important;padding:2px 0 10px!important;scrollbar-width:thin}
+[id^="aba-"]{flex:0 0 auto!important;min-width:150px!important;padding:12px 16px!important;border-radius:12px!important;font-size:12px!important;letter-spacing:.02em!important;transition:.18s ease!important;border:1px solid transparent!important}
+#painel-clientes,#painel-conteudo,#painel-contato,#painel-respiracao,#painel-avisos{background:var(--card)!important;border:1px solid var(--line)!important;border-radius:18px!important;padding:22px!important;gap:14px!important}
+h1,h2,h3{font-family:'Cormorant Garamond',serif!important;color:var(--navy)!important} label{font-family:'Cinzel',serif!important;letter-spacing:.05em!important;color:#656351!important;font-size:10px!important}
+input,select,textarea{font-family:'Montserrat',sans-serif!important;border:1px solid #d9d5ca!important;border-radius:10px!important;background:#fff!important;color:var(--text)!important;min-height:42px!important;outline:none!important}
+input:focus,select:focus,textarea:focus{border-color:#9da28a!important;box-shadow:0 0 0 3px rgba(143,146,114,.13)!important}
+button{font-family:'Montserrat',sans-serif!important;transition:.18s ease!important} button:hover{transform:translateY(-1px);filter:brightness(.98)}
+@media(max-width:700px){body{padding:10px 8px!important}#conteudo-pagina{border-radius:18px!important;padding:17px!important}#conteudo-pagina>a:first-child p{font-size:23px!important}[id^="aba-"]{min-width:128px!important;font-size:11.5px!important;padding:11px 12px!important}#painel-clientes,#painel-conteudo,#painel-contato,#painel-respiracao,#painel-avisos{padding:16px!important}}
+</style>
+
+<style id="mirai-admin-final-style">
+.mirai-field{display:flex;flex-direction:column;gap:5px}
+.mirai-field>span{font-size:10px;color:#79778E;font-weight:700;letter-spacing:.06em}
+.mirai-field input,.mirai-field select,.mirai-field textarea{
+ width:100%;box-sizing:border-box;background:#fff;border:1px solid #E4E1D8;border-radius:9px;
+ padding:10px 12px;font-size:13px;font-family:'Montserrat',sans-serif;color:#29323b
+}
+.mirai-field textarea{resize:vertical}
+@media(max-width:680px){.mirai-grid-conteudo{grid-template-columns:1fr!important}}
+</style>
+
+</head>
+<body style="margin:0; background:#FAF9F6; font-family:'Inter',sans-serif; display:flex; justify-content:center; padding:24px 16px; box-sizing:border-box; min-height:100vh;">
+<div id="admin-login-overlay" style="position:fixed;inset:0;z-index:99999;background:#FBFAF7;display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:min(420px,100%);background:white;border:1px solid #E5E0D7;border-radius:24px;padding:30px 26px;box-shadow:0 18px 55px rgba(30,48,59,.09);text-align:center;">
+    <div style="font-family:Cinzel,serif;color:#153B67;font-size:11px;letter-spacing:.15em;font-weight:600;">MIRAI KOKORO PROJECT</div>
+    <h1 style="font-family:'Cormorant Garamond',serif;color:#153B67;font-size:34px;font-weight:600;margin:8px 0 5px;">Painel Administrativo</h1>
+    <p style="font:500 12px/1.55 Montserrat,Arial,sans-serif;color:#788187;margin:0 0 20px;">Acesso exclusivo da administração.</p>
+    <input id="admin-login-email" type="email" autocomplete="email" placeholder="E-mail" style="width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #D8D5CE;border-radius:10px;margin-bottom:10px;font:500 13px Montserrat,Arial,sans-serif;">
+    <input id="admin-login-senha" type="password" autocomplete="current-password" placeholder="Senha" style="width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #D8D5CE;border-radius:10px;margin-bottom:12px;font:500 13px Montserrat,Arial,sans-serif;">
+    <button id="admin-login-entrar" type="button" style="width:100%;border:0;border-radius:11px;background:#153B67;color:#fff;padding:12px 14px;font:700 11px Montserrat,Arial,sans-serif;cursor:pointer;">ENTRAR NO ADMIN</button>
+    <button id="admin-login-esqueci" type="button" style="border:0;background:transparent;color:#7F8765;font:600 10px Montserrat,Arial,sans-serif;cursor:pointer;margin-top:13px;">Esqueci minha senha</button>
+    <p id="admin-login-msg" style="display:none;font:500 11px/1.5 Montserrat,Arial,sans-serif;color:#9A4A3B;margin:11px 0 0;"></p>
+  </div>
+</div>
+
+
+  <div id="conteudo-pagina" style="width:100%; max-width:380px; display:none; flex-direction:column;">
+
+    <div style="text-decoration:none; display:flex; align-items:center; gap:10px; margin-bottom:18px;"><i class="ti ti-arrow-left" style="font-size:19px; color:#1B2A4A;"></i>
+      <p style="font-family:'Playfair Display',serif; font-weight:700; font-size:18px; color:#1B2A4A; margin:0;">Painel Administrativo</p></div>
+
+    <div style="display:flex; gap:6px; margin-bottom:18px;">
+      <div id="aba-clientes" onclick="mostrarAba('clientes')" style="flex:1; text-align:center; padding:9px 2px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; color:#FFFFFF; background:#1B2A4A;">Facilitadores</div>
+      <div id="aba-conteudo" onclick="mostrarAba('conteudo')" style="flex:1; text-align:center; padding:9px 2px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; color:#8A8560; background:#F0EEE6;">Conteúdo</div>
+      <div id="aba-contato" onclick="mostrarAba('contato')" style="flex:1; text-align:center; padding:9px 2px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; color:#8A8560; background:#F0EEE6;">Contato</div>
+      <div id="aba-respiracao" onclick="mostrarAba('respiracao')" style="flex:1; text-align:center; padding:9px 2px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; color:#8A8560; background:#F0EEE6;">Respiração</div>
+      <div id="aba-avisos" onclick="mostrarAba('avisos')" style="flex:1; text-align:center; padding:9px 2px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; color:#8A8560; background:#F0EEE6;">Avisos</div>
+      <div id="aba-configuracoes" onclick="mostrarAba('configuracoes')" style="flex:1; text-align:center; padding:9px 2px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; color:#8A8560; background:#F0EEE6;">Configurações</div>
+      <div id="aba-biblioteca" onclick="mostrarAba('biblioteca')" style="flex:1; text-align:center; padding:9px 2px; border-radius:9px; font-size:11.5px; font-weight:600; cursor:pointer; color:#8A8560; background:#F0EEE6;">Biblioteca</div>
+    </div>
+
+    <div id="painel-clientes" style="display:flex; flex-direction:column; gap:12px;">
+      <p style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Cadastrar novo facilitador</p>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">E-MAIL DO CLIENTE</p>
+        <input id="input-email-cliente" type="email" placeholder="cliente@email.com" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+      </div>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">SENHA DE ACESSO (OPCIONAL)</p>
+        <input id="input-senha-cliente" type="text" placeholder="deixe em branco para o cliente definir a própria senha por e-mail" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+      </div>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">NOME COMPLETO</p>
+        <input id="input-nome-cliente" type="text" placeholder="nome do cliente" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+      </div>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">DATA DE NASCIMENTO</p>
+        <input id="input-nascimento-cliente" type="date" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+      </div>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">TELEFONE</p>
+        <input id="input-telefone-cliente" type="text" placeholder="(00) 00000-0000" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+      </div>
+      <p style="font-size:10.5px; color:#B0AC9C; margin:0;">Esses dados ficam só aqui no painel — o facilitador nunca vê essas informações no app.</p>
+      <button id="botao-cadastrar-cliente" style="background:#1B2A4A; color:#fff; border:none; border-radius:9px; padding:12px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px;">+ Cadastrar facilitador</button>
+      <p id="msg-cliente" style="font-size:12px; margin:0; display:none;"></p>
+
+      <div style="height:1px; background:#E8E5DC; margin:12px 0 4px;"></div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div>
+          <p style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Facilitadores cadastrados</p>
+          <p id="contador-facilitadores" style="font-size:11px; color:#918D7E; margin:3px 0 0;">Carregando...</p>
+        </div>
+        <button id="botao-atualizar-facilitadores" type="button" style="background:#F0EEE6; color:#1B2A4A; border:1px solid #E4E1D8; border-radius:9px; padding:9px 11px; font-size:11.5px; font-weight:600; cursor:pointer;">Atualizar</button>
+      </div>
+
+      <input id="busca-facilitadores" type="search" placeholder="Buscar por nome, e-mail ou telefone" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+
+      <div id="lista-facilitadores" style="display:flex; flex-direction:column; gap:8px;">
+        <p style="font-size:12px; color:#918D7E; margin:0;">Carregando facilitadores...</p>
+      </div>
+    </div>
+
+    
+<div id="painel-conteudo" style="display:none; flex-direction:column; gap:14px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+    <div>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#263b54;font-weight:700;margin:0;">Biblioteca de Materiais</p>
+      <p style="font-size:12px;color:#726f67;margin:4px 0 0;">Cadastre uma vez. A Biblioteca organiza automaticamente por faixa etária, virtude e encontro.</p>
+    </div>
+    <button id="botao-limpar-conteudo" type="button" style="background:#F0EEE6;color:#263b54;border:none;border-radius:9px;padding:9px 12px;font-size:12px;font-weight:600;cursor:pointer;">Novo material</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;" class="mirai-grid-conteudo">
+    <label class="mirai-field"><span>ÁREA</span>
+      <select id="select-area">
+        <option value="Boas-vindas">Boas-vindas</option>
+        <option value="Virtudes">Virtudes</option>
+      </select>
+    </label>
+
+    <label class="mirai-field"><span>FAIXA ETÁRIA</span>
+      <select id="select-faixa">
+        <option value="6–10 anos">6–10 anos</option>
+        <option value="11–14 anos">11–14 anos</option>
+      </select>
+    </label>
+
+    <label id="campo-virtude" class="mirai-field"><span>VIRTUDE</span>
+      <select id="select-virtude"></select>
+    </label>
+
+    <label id="campo-encontro" class="mirai-field"><span>ENCONTRO</span>
+      <select id="select-encontro">
+        <option value="1">Encontro 1</option>
+        <option value="2">Encontro 2 — Consolidação</option>
+      </select>
+    </label>
+
+    <label class="mirai-field"><span>TIPO DE MATERIAL</span>
+      <select id="select-subtipo"></select>
+    </label>
+
+    <label class="mirai-field"><span>VISIBILIDADE</span>
+      <select id="select-publicado">
+        <option value="true">Publicado</option>
+        <option value="false">Oculto</option>
+      </select>
+    </label>
+  </div>
+
+  <label class="mirai-field"><span>TÍTULO</span>
+    <input id="input-titulo" type="text" placeholder="Ex.: Guia do Facilitador — Humildade">
+  </label>
+
+  <label class="mirai-field"><span>DESCRIÇÃO (OPCIONAL)</span>
+    <input id="input-descricao" type="text" placeholder="Uma frase curta para identificar o material">
+  </label>
+
+  <label class="mirai-field"><span>ARQUIVO / LINK</span>
+    <textarea id="input-link" rows="2" placeholder="Cole o link protegido do Google Drive, vídeo ou áudio"></textarea>
+  </label>
+
+  <!-- Campos de compatibilidade com conteúdos antigos -->
+  <select id="select-tipo" style="display:none"><option>Material (PDF)</option><option>Áudio</option><option>Vídeo</option></select>
+  <select id="select-categoria" style="display:none"><option value="__nova__">Compatibilidade</option></select>
+  <div id="campo-nova-categoria" style="display:none"><input id="input-nova-categoria"></div>
+  <span id="label-link" style="display:none"></span>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button id="botao-adicionar-conteudo" style="flex:1;min-width:180px;background:#263b54;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;">Salvar material</button>
+    <button id="botao-cancelar-edicao-conteudo" type="button" style="display:none;background:#F0EEE6;color:#263b54;border:none;border-radius:10px;padding:12px 16px;font-size:12px;font-weight:600;cursor:pointer;">Cancelar edição</button>
+  </div>
+  <p id="msg-conteudo" style="font-size:12px;margin:0;display:none;"></p>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;">
+    <p style="font-size:11px;color:#918D7E;margin:0;">MATERIAIS CADASTRADOS</p>
+    <input id="busca-conteudo-admin" type="search" placeholder="Buscar material…" style="max-width:280px;width:100%;background:#fff;border:1px solid #E4E1D8;border-radius:9px;padding:9px 11px;font-size:12px;">
+  </div>
+  <div id="lista-itens-publicados"></div>
+</div>
+
+<div id="painel-contato" style="display:none; flex-direction:column; gap:12px;">
+      <p style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Informações de contato exibidas no app</p>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">E-MAIL</p>
+        <input id="input-contato-email" type="email" placeholder="contato@miraikokoro.com" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+      </div>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">TELEFONE</p>
+        <input id="input-contato-telefone" type="text" placeholder="(00) 00000-0000" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+      </div>
+      <button id="botao-salvar-contato" style="background:#1B2A4A; color:#fff; border:none; border-radius:9px; padding:12px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px;">Salvar contato</button>
+      <p id="msg-contato" style="font-size:12px; margin:0; display:none;"></p>
+    </div>
+
+    <div id="painel-respiracao" style="display:none; flex-direction:column; gap:12px;">
+      <p style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Técnicas de respiração</p>
+
+      <div id="lista-tecnicas"></div>
+
+      <button id="botao-nova-tecnica" style="background:#1B2A4A; color:#fff; border:none; border-radius:9px; padding:12px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px;">+ Nova técnica</button>
+
+      <div id="construtor-tecnica" style="display:none; flex-direction:column; gap:12px; background:#FFFFFF; border-radius:12px; padding:14px; box-shadow:0 3px 10px rgba(27,42,74,0.06); margin-top:6px;">
+        <p id="titulo-construtor" style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Nova técnica</p>
+
+        <div>
+          <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">NOME DA TÉCNICA</p>
+          <input id="input-nome-tecnica" type="text" placeholder="ex: 4-7-8" style="width:100%; box-sizing:border-box; background:#FAF9F6; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+        </div>
+
+        <div>
+          <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">LINK DA MÚSICA DE FUNDO (OPCIONAL)</p>
+          <input id="input-musica-tecnica" type="text" placeholder="cole aqui o link direto do arquivo de áudio (.mp3)" style="width:100%; box-sizing:border-box; background:#FAF9F6; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px;">
+          <p style="font-size:10px; color:#B0AC9C; margin:4px 0 0;">precisa ser um link direto de áudio (não funciona com link de página do Google Drive).</p>
+        </div>
+
+        <div>
+          <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">SEQUÊNCIA DO CICLO</p>
+          <div id="lista-fases-construtor" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;"></div>
+          <div style="display:flex; gap:6px;">
+            <select id="select-tipo-fase" style="flex:1; box-sizing:border-box; background:#FAF9F6; border:1px solid #E4E1D8; border-radius:9px; padding:10px 8px; font-size:13px;">
+              <option value="inspirar">Inspire</option>
+              <option value="manter">Segure</option>
+              <option value="expirar">Expire</option>
+            </select>
+            <input id="input-segundos-fase" type="number" min="1" placeholder="seg" style="width:64px; box-sizing:border-box; background:#FAF9F6; border:1px solid #E4E1D8; border-radius:9px; padding:10px 8px; font-size:13px;">
+            <button id="botao-add-fase" style="background:#8A8560; color:#fff; border:none; border-radius:9px; padding:0 16px; font-size:16px; font-weight:600; cursor:pointer;">+</button>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button id="botao-salvar-tecnica" style="flex:1; background:#1B2A4A; color:#fff; border:none; border-radius:9px; padding:12px; font-size:13.5px; font-weight:600; cursor:pointer;">Salvar técnica</button>
+          <button id="botao-cancelar-tecnica" style="background:#F0EEE6; color:#8A8560; border:none; border-radius:9px; padding:12px 16px; font-size:13.5px; font-weight:600; cursor:pointer;">Cancelar</button>
+        </div>
+        <p id="msg-tecnica" style="font-size:12px; margin:0; display:none;"></p>
+      </div>
+    </div>
+
+    <div id="painel-avisos" style="display:none; flex-direction:column; gap:12px;">
+      <p style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Enviar aviso para todos os facilitadores</p>
+      <div>
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0 0 4px;">MENSAGEM</p>
+        <textarea id="input-texto-aviso" rows="3" placeholder="escreva o aviso que os clientes vão ver" style="width:100%; box-sizing:border-box; background:#FFFFFF; border:1px solid #E4E1D8; border-radius:9px; padding:10px 12px; font-size:13px; font-family:'Inter',sans-serif;"></textarea>
+      </div>
+      <button id="botao-enviar-aviso" style="background:#1B2A4A; color:#fff; border:none; border-radius:9px; padding:12px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px;">Enviar aviso</button>
+      <p id="msg-aviso" style="font-size:12px; margin:0; display:none;"></p>
+
+      <p style="font-size:11px; color:#918D7E; margin:18px 0 4px;">avisos já enviados</p>
+      <div id="lista-avisos-enviados"></div>
+    </div>
+
+    <div id="painel-biblioteca" style="display:none; flex-direction:column; gap:13px;">
+      <p style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Biblioteca Mirai</p>
+      <p style="font-size:11.5px; color:#79778E; line-height:1.6; margin:0;">
+        Acesse a biblioteca de materiais sem alterar o cadastro ou as permissões dos facilitadores.
+      </p>
+      <div style="background:#FAF9F5; border:1px solid #E4E1D8; border-radius:12px; padding:16px; text-align:center;">
+        <p style="font-family:Cormorant,serif; font-size:22px; color:#1B2A4A; margin:0 0 5px;">Mirai Kokoro</p>
+        <p style="font-size:11px; color:#918D7E; margin:0 0 14px;">Biblioteca de materiais</p>
+        <a href="biblioteca-mirai-v2-drive-abrir-imprimir.html" target="_blank"
+           style="display:inline-block; text-decoration:none; background:#1B2A4A; color:#FFFFFF; border-radius:9px; padding:11px 16px; font-size:12px; font-weight:600;">
+          Abrir Biblioteca
+        </a>
+      </div>
+    </div>
+
+    <div id="painel-configuracoes" style="display:none; flex-direction:column; gap:13px;">
+      <p style="font-size:13px; color:#1B2A4A; font-weight:600; margin:0;">Acesso protegido aos materiais</p>
+      <p style="font-size:11.5px; color:#79778E; line-height:1.6; margin:0;">
+        Os facilitadores autorizados recebem acesso à pasta de materiais do app. Os demais arquivos do seu Google Drive continuam privados.
+      </p>
+
+      <div style="background:#FFFFFF; border:1px solid #E4E1D8; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+        <p style="font-size:11px; color:#79778E; font-weight:600; margin:0;">PASTA PROTEGIDA DO APP</p>
+        <p id="drive-pasta-status" style="font-size:12px; color:#918D7E; margin:0;">Carregando configuração...</p>
+        <button id="botao-selecionar-pasta-drive" type="button" style="background:#1B2A4A; color:#FFFFFF; border:none; border-radius:9px; padding:11px 12px; font-size:12.5px; font-weight:600; cursor:pointer;">
+          Selecionar pasta no Google Drive
+        </button>
+      </div>
+
+      <div style="background:#FAF9F5; border:1px solid #E4E1D8; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:9px;">
+        <p style="font-size:12px; color:#1B2A4A; font-weight:600; margin:0;">Facilitadores já cadastrados</p>
+        <p style="font-size:11px; color:#79778E; line-height:1.55; margin:0;">
+          Use uma única vez para liberar a pasta aos facilitadores que já existem. Depois, novos cadastros serão sincronizados automaticamente.
+        </p>
+        <button id="botao-sincronizar-drive" type="button" style="background:#8A8560; color:#FFFFFF; border:none; border-radius:9px; padding:11px 12px; font-size:12.5px; font-weight:600; cursor:pointer;">
+          Sincronizar acessos existentes
+        </button>
+        <p id="msg-drive-sync" style="font-size:11.5px; margin:0; display:none;"></p>
+      </div>
+    </div>
+
+  </div>
+
+  <p id="mensagem-acesso-negado" style="display:none; text-align:center; color:#B23A3A; font-size:14px; margin-top:100px;">Acesso restrito. Redirecionando...</p>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuUQi_s4v0Iat3FkzEfY06lX1NIaDAJ3Y",
+      authDomain: "mirai-kokoro.firebaseapp.com",
+      projectId: "mirai-kokoro",
+      storageBucket: "mirai-kokoro.firebasestorage.app",
+      messagingSenderId: "601277675162",
+      appId: "1:601277675162:web:b2ab41cbb4709b008a9123"
+    };
+
+    const UID_ADMIN = "4jnMbmwV2JbSmKkzcJLBum7ybyK2";
+    const NOME_FASE = { inspirar: "Inspire", manter: "Segure", expirar: "Expire" };
+
+    const app = initializeApp(firebaseConfig, "AdminMirai");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let fasesConstrutor = [];
+    let tecnicaEditandoId = null;
+    let itensPublicados = [];
+
+    const GOOGLE_CONFIG_DOC = "google_drive_v2";
+    let googleDriveConfig = { clientId: "", apiKey: "", folderId: "", folderName: "" };
+    let driveAccessToken = null;
+    let driveTokenClient = null;
+    let pickerCarregado = false;
+
+    
+    const adminLoginOverlay = document.getElementById("admin-login-overlay");
+    const adminLoginEmail = document.getElementById("admin-login-email");
+    const adminLoginSenha = document.getElementById("admin-login-senha");
+    const adminLoginEntrar = document.getElementById("admin-login-entrar");
+    const adminLoginEsqueci = document.getElementById("admin-login-esqueci");
+    const adminLoginMsg = document.getElementById("admin-login-msg");
+
+    function mostrarMensagemAdmin(texto, ok = false) {
+      adminLoginMsg.textContent = texto;
+      adminLoginMsg.style.color = ok ? "#65705A" : "#9A4A3B";
+      adminLoginMsg.style.display = "block";
+    }
+
+    adminLoginEntrar.addEventListener("click", async () => {
+      const email = adminLoginEmail.value.trim();
+      const senha = adminLoginSenha.value;
+      adminLoginMsg.style.display = "none";
+      if (!email || !senha) {
+        mostrarMensagemAdmin("Digite o e-mail e a senha da administração.");
+        return;
+      }
+      adminLoginEntrar.disabled = true;
+      adminLoginEntrar.textContent = "ENTRANDO…";
+      try {
+        if (auth.currentUser) await signOut(auth);
+        const credencial = await signInWithEmailAndPassword(auth, email, senha);
+        if (credencial.user.uid !== UID_ADMIN) {
+          await signOut(auth);
+          mostrarMensagemAdmin("Este cadastro não possui acesso administrativo.");
+        }
+      } catch (erro) {
+        mostrarMensagemAdmin("Não foi possível entrar. Confira o e-mail e a senha.");
+      } finally {
+        adminLoginEntrar.disabled = false;
+        adminLoginEntrar.textContent = "ENTRAR NO ADMIN";
+      }
+    });
+
+    adminLoginSenha.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") adminLoginEntrar.click();
+    });
+
+    adminLoginEsqueci.addEventListener("click", async () => {
+      const email = adminLoginEmail.value.trim();
+      if (!email) {
+        mostrarMensagemAdmin("Digite seu e-mail acima para redefinir a senha.");
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        mostrarMensagemAdmin("Enviamos o e-mail para redefinir sua senha.", true);
+      } catch (erro) {
+        mostrarMensagemAdmin("Não foi possível enviar a redefinição agora.");
+      }
+    });
+
+    let adminInicializado = false;
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.uid === UID_ADMIN) {
+        adminLoginOverlay.style.display = "none";
+        document.getElementById("mensagem-acesso-negado").style.display = "none";
+        document.getElementById("conteudo-pagina").style.display = "flex";
+        if (!adminInicializado) {
+          adminInicializado = true;
+          carregarCategorias();
+          carregarItensPublicados();
+          carregarFacilitadores();
+          carregarConfiguracaoDrive();
+        }
+      } else {
+        document.getElementById("conteudo-pagina").style.display = "none";
+        adminLoginOverlay.style.display = "flex";
+      }
+    });
+
+    window.mostrarAba = function (nome) {
+      const paineis = { clientes: document.getElementById("painel-clientes"), conteudo: document.getElementById("painel-conteudo"), contato: document.getElementById("painel-contato"), respiracao: document.getElementById("painel-respiracao"), avisos: document.getElementById("painel-avisos"), configuracoes: document.getElementById("painel-configuracoes"), biblioteca: document.getElementById("painel-biblioteca") };
+      const abas = { clientes: document.getElementById("aba-clientes"), conteudo: document.getElementById("aba-conteudo"), contato: document.getElementById("aba-contato"), respiracao: document.getElementById("aba-respiracao"), avisos: document.getElementById("aba-avisos"), configuracoes: document.getElementById("aba-configuracoes"), biblioteca: document.getElementById("aba-biblioteca") };
+
+      Object.keys(paineis).forEach(key => {
+        paineis[key].style.display = (key === nome) ? "flex" : "none";
+        abas[key].style.background = (key === nome) ? "#1B2A4A" : "#F0EEE6";
+        abas[key].style.color = (key === nome) ? "#FFFFFF" : "#8A8560";
+      });
+
+      if (nome === "clientes") carregarFacilitadores();
+      if (nome === "conteudo") { atualizarFormularioConteudo(); carregarItensPublicados(); }
+      if (nome === "contato") carregarContatoAdmin();
+      if (nome === "respiracao") carregarTecnicasAdmin();
+      if (nome === "avisos") carregarAvisosAdmin();
+      if (nome === "configuracoes") carregarConfiguracaoDrive();
+    };
+
+
+    const VIRTUDES_ADMIN = {
+      "6–10 anos": ["Humildade", "Abnegação", "Perseverança", "Responsabilidade", "Paciência", "Honestidade", "Não Julgamento", "Gratidão", "Bom Humor", "Otimismo", "Cuidado com o Corpo", "Amor à Natureza e aos Animais", "Ajuda ao Próximo", "Perdão", "Reconciliação", "Honrar a Família"],
+      "11–14 anos": ["Humildade", "Abnegação", "Individuação", "Perdão", "Utilidade", "Igualdade", "Fraternidade", "Ajuda ao Próximo", "Gratidão", "Busca do Melhoramento", "Não Julgamento"]
+    };
+    let conteudoEditandoId = null;
+
+    function tiposPorArea(area) {
+      return area === "Boas-vindas"
+        ? ["Material de Boas-vindas","Slides de Apresentação","Áudio"]
+        : ["Guia do Facilitador","Recursos para Atividades","Treinando Virtudes Todos os Dias","Áudio","Vídeo"];
+    }
+
+    function atualizarFormularioConteudo() {
+      const area = document.getElementById("select-area").value;
+      const faixa = document.getElementById("select-faixa").value;
+      const virtudeWrap = document.getElementById("campo-virtude");
+      const encontroWrap = document.getElementById("campo-encontro");
+      const virtudeSel = document.getElementById("select-virtude");
+      const subtipoSel = document.getElementById("select-subtipo");
+
+      const boas = area === "Boas-vindas";
+      virtudeWrap.style.display = boas ? "none" : "flex";
+      encontroWrap.style.display = boas ? "none" : "flex";
+
+      const valorVirtude = virtudeSel.value;
+      virtudeSel.innerHTML = (VIRTUDES_ADMIN[faixa] || []).map(v => `<option value="${v}">${v}</option>`).join("");
+      if ([...virtudeSel.options].some(o => o.value === valorVirtude)) virtudeSel.value = valorVirtude;
+
+      const valorSubtipo = subtipoSel.value;
+      subtipoSel.innerHTML = tiposPorArea(area).map(v => `<option value="${v}">${v}</option>`).join("");
+      if ([...subtipoSel.options].some(o => o.value === valorSubtipo)) subtipoSel.value = valorSubtipo;
+      sincronizarTipoTecnico();
+    }
+
+    function sincronizarTipoTecnico() {
+      const subtipo = document.getElementById("select-subtipo").value || "";
+      const tipo = subtipo === "Áudio" ? "Áudio" : subtipo === "Vídeo" ? "Vídeo" : "Material (PDF)";
+      document.getElementById("select-tipo").value = tipo;
+    }
+
+    window.verificarNovaCategoria = function () {};
+    window.atualizarCategorias = function () { atualizarFormularioConteudo(); };
+    async function carregarCategorias() { atualizarFormularioConteudo(); }
+
+    function limparFormularioConteudo() {
+      conteudoEditandoId = null;
+      document.getElementById("input-titulo").value = "";
+      document.getElementById("input-descricao").value = "";
+      document.getElementById("input-link").value = "";
+      document.getElementById("select-publicado").value = "true";
+      document.getElementById("botao-adicionar-conteudo").textContent = "Salvar material";
+      document.getElementById("botao-cancelar-edicao-conteudo").style.display = "none";
+      document.getElementById("msg-conteudo").style.display = "none";
+      atualizarFormularioConteudo();
+    }
+
+    document.getElementById("select-area").addEventListener("change", atualizarFormularioConteudo);
+    document.getElementById("select-faixa").addEventListener("change", atualizarFormularioConteudo);
+    document.getElementById("select-subtipo").addEventListener("change", sincronizarTipoTecnico);
+    document.getElementById("botao-limpar-conteudo").addEventListener("click", limparFormularioConteudo);
+    document.getElementById("botao-cancelar-edicao-conteudo").addEventListener("click", limparFormularioConteudo);
+    document.getElementById("busca-conteudo-admin").addEventListener("input", () => carregarItensPublicados());
+    atualizarFormularioConteudo();
+
+    async function carregarItensPublicados() {
+      const snap = await getDocs(collection(db, "conteudo"));
+      const lista = document.getElementById("lista-itens-publicados");
+      if (!lista) return;
+      lista.innerHTML = "";
+
+      itensPublicados = [];
+      snap.forEach(docSnap => itensPublicados.push({ id: docSnap.id, ...docSnap.data() }));
+      itensPublicados.sort((a, b) => chaveOrdem(a) - chaveOrdem(b));
+
+      const busca = (document.getElementById("busca-conteudo-admin")?.value || "").trim().toLowerCase();
+      const filtrados = itensPublicados.filter(item => {
+        const texto = [item.titulo,item.area,item.faixaEtaria,item.virtude,item.encontro,item.subtipo,item.tipo,item.categoria]
+          .filter(Boolean).join(" ").toLowerCase();
+        return !busca || texto.includes(busca);
+      });
+
+      if (!filtrados.length) {
+        lista.innerHTML = `<div style="padding:18px;text-align:center;color:#918D7E;font-size:12px;">Nenhum material encontrado.</div>`;
+        return;
+      }
+
+      filtrados.forEach((item) => {
+        const indice = itensPublicados.findIndex(x => x.id === item.id);
+        const card = document.createElement("div");
+        card.style.cssText = "background:#FFFFFF;border:1px solid #ECE8DE;border-radius:12px;padding:12px 14px;margin-top:8px;";
+        const visivel = item.publicado !== false && item.status !== "rascunho";
+        const meta = [
+          item.area || item.categoria || "Conteúdo",
+          item.faixaEtaria || item.idade || "Todas",
+          item.virtude || "",
+          item.encontro ? `Encontro ${item.encontro}` : "",
+          item.subtipo || item.tipo || ""
+        ].filter(Boolean).join(" · ");
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+            <div style="min-width:0;">
+              <p style="font-size:12.5px;font-weight:700;margin:0;color:#29323b;">${item.titulo || "Sem título"}</p>
+              <p style="font-size:10.5px;color:#918D7E;margin:4px 0 0;">${meta}</p>
+            </div>
+            <span style="font-size:10px;padding:4px 7px;border-radius:999px;background:${visivel ? "#EDF3EC" : "#F3F0EA"};color:${visivel ? "#56705A" : "#8B8171"};">${visivel ? "Publicado" : "Oculto"}</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+            <button class="botao-editar-conteudo" data-id="${item.id}" style="background:#F0EEE6;color:#263b54;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;">Editar</button>
+            <button class="botao-toggle-conteudo" data-id="${item.id}" data-visivel="${visivel}" style="background:#F0EEE6;color:#263b54;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;">${visivel ? "Ocultar" : "Publicar"}</button>
+            <button class="botao-mover-conteudo" data-id="${item.id}" data-direcao="cima" ${indice === 0 ? "disabled" : ""} style="background:#F0EEE6;color:#263b54;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;opacity:${indice === 0 ? ".4" : "1"};">▲</button>
+            <button class="botao-mover-conteudo" data-id="${item.id}" data-direcao="baixo" ${indice === itensPublicados.length - 1 ? "disabled" : ""} style="background:#F0EEE6;color:#263b54;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;opacity:${indice === itensPublicados.length - 1 ? ".4" : "1"};">▼</button>
+            <button class="botao-excluir-conteudo" data-id="${item.id}" style="margin-left:auto;background:#FBEAEA;color:#B23A3A;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;">Excluir</button>
+          </div>
+        `;
+        lista.appendChild(card);
+      });
+
+      document.querySelectorAll(".botao-excluir-conteudo").forEach(b => b.addEventListener("click", () => excluirConteudo(b.dataset.id)));
+      document.querySelectorAll(".botao-mover-conteudo").forEach(b => b.addEventListener("click", () => moverItemConteudo(b.dataset.id, b.dataset.direcao)));
+      document.querySelectorAll(".botao-editar-conteudo").forEach(b => b.addEventListener("click", () => editarConteudo(b.dataset.id)));
+      document.querySelectorAll(".botao-toggle-conteudo").forEach(b => b.addEventListener("click", () => alternarPublicacaoConteudo(b.dataset.id, b.dataset.visivel === "true")));
+    }
+
+    async function editarConteudo(id) {
+      const item = itensPublicados.find(x => x.id === id);
+      if (!item) return;
+      conteudoEditandoId = id;
+      const area = item.area || ((item.categoria || "").toLowerCase().includes("boas") ? "Boas-vindas" : "Virtudes");
+      document.getElementById("select-area").value = area;
+      document.getElementById("select-faixa").value = item.faixaEtaria || item.idade || "6–10 anos";
+      atualizarFormularioConteudo();
+      if (item.virtude && [...document.getElementById("select-virtude").options].some(o=>o.value===item.virtude)) document.getElementById("select-virtude").value = item.virtude;
+      document.getElementById("select-encontro").value = String(item.encontro || "1");
+      const subtipo = item.subtipo || item.tipo || (area === "Boas-vindas" ? "Material de Boas-vindas" : "Recursos para Atividades");
+      if ([...document.getElementById("select-subtipo").options].some(o=>o.value===subtipo)) document.getElementById("select-subtipo").value = subtipo;
+      sincronizarTipoTecnico();
+      document.getElementById("input-titulo").value = item.titulo || "";
+      document.getElementById("input-descricao").value = item.descricao || "";
+      document.getElementById("input-link").value = item.link || "";
+      document.getElementById("select-publicado").value = item.publicado === false ? "false" : "true";
+      document.getElementById("botao-adicionar-conteudo").textContent = "Salvar alterações";
+      document.getElementById("botao-cancelar-edicao-conteudo").style.display = "inline-block";
+      document.getElementById("painel-conteudo").scrollIntoView({behavior:"smooth",block:"start"});
+    }
+
+    async function alternarPublicacaoConteudo(id, atualmenteVisivel) {
+      await setDoc(doc(db, "conteudo", id), { publicado: !atualmenteVisivel, atualizadoEm: serverTimestamp() }, { merge: true });
+      await carregarItensPublicados();
+    }
+
+    function chaveOrdem(item) {
+      if (typeof item.ordem === "number") return item.ordem;
+      return item.criadoEm?.seconds || 0;
+    }
+
+    async function moverItemConteudo(id, direcao) {
+      const indiceAtual = itensPublicados.findIndex(i => i.id === id);
+      const indiceAlvo = direcao === "cima" ? indiceAtual - 1 : indiceAtual + 1;
+      if (indiceAtual === -1 || indiceAlvo < 0 || indiceAlvo >= itensPublicados.length) return;
+
+      const itemAtual = itensPublicados[indiceAtual];
+      const itemAlvo = itensPublicados[indiceAlvo];
+      const ordemAtual = chaveOrdem(itemAtual);
+      const ordemAlvo = chaveOrdem(itemAlvo);
+
+      await setDoc(doc(db, "conteudo", itemAtual.id), { ordem: ordemAlvo }, { merge: true });
+      await setDoc(doc(db, "conteudo", itemAlvo.id), { ordem: ordemAtual }, { merge: true });
+
+      carregarItensPublicados();
+    }
+
+    async function excluirConteudo(id) {
+      if (!confirm("Tem certeza que deseja excluir esse conteúdo? Essa ação não pode ser desfeita.")) return;
+      await deleteDoc(doc(db, "conteudo", id));
+      carregarItensPublicados();
+      carregarCategorias();
+    }
+
+    async function carregarContatoAdmin() {
+      try {
+        const snap = await getDoc(doc(db, "configuracoes", "contato"));
+        if (snap.exists()) {
+          const dados = snap.data();
+          document.getElementById("input-contato-email").value = dados.email || "";
+          document.getElementById("input-contato-telefone").value = dados.telefone || "";
+        }
+      } catch (erro) {
+        console.error("Erro ao carregar contato:", erro);
+      }
+    }
+
+    document.getElementById("botao-salvar-contato").addEventListener("click", async function () {
+      const email = document.getElementById("input-contato-email").value.trim();
+      const telefone = document.getElementById("input-contato-telefone").value.trim();
+      const msg = document.getElementById("msg-contato");
+
+      if (!email || !telefone) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Preencha e-mail e telefone antes de salvar.";
+        msg.style.display = "block";
+        return;
+      }
+
+      try {
+        await setDoc(doc(db, "configuracoes", "contato"), { email, telefone, atualizadoEm: serverTimestamp() });
+        msg.style.color = "#3A6650";
+        msg.textContent = "✅ Contato atualizado com sucesso!";
+        msg.style.display = "block";
+      } catch (erro) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Erro ao salvar: " + erro.message;
+        msg.style.display = "block";
+      }
+    });
+
+    // ---------- TÉCNICAS DE RESPIRAÇÃO ----------
+
+    async function carregarTecnicasAdmin() {
+      const lista = document.getElementById("lista-tecnicas");
+      lista.innerHTML = "<p style='font-size:12px; color:#918D7E;'>Carregando...</p>";
+      const snap = await getDocs(collection(db, "respiracao_config"));
+      lista.innerHTML = "";
+
+      if (snap.empty) {
+        lista.innerHTML = "<p style='font-size:12px; color:#918D7E;'>Nenhuma técnica cadastrada ainda.</p>";
+        return;
+      }
+
+      snap.forEach(docSnap => {
+        const dados = docSnap.data();
+        const resumo = (dados.fases || []).map(f => (NOME_FASE[f.tipo] || f.tipo) + " " + f.segundos + "s").join(" → ");
+        const card = document.createElement("div");
+        card.style.cssText = "background:#FFFFFF; border-radius:12px; padding:12px 14px; box-shadow:0 3px 10px rgba(27,42,74,0.06); margin-top:8px;";
+        card.innerHTML = `
+          <p style="font-size:12.5px; font-weight:600; margin:0; color:#3A3A3A;">${dados.nomeExibicao || "Sem nome"}</p>
+          <p style="font-size:10.5px; color:#918D7E; margin:4px 0 8px;">${resumo}</p>
+          <div style="display:flex; gap:8px;">
+            <button class="botao-editar-tecnica" data-id="${docSnap.id}" style="flex:1; background:#F0EEE6; color:#1B2A4A; border:none; border-radius:8px; padding:7px; font-size:12px; font-weight:600; cursor:pointer;">Editar</button>
+            <button class="botao-excluir-tecnica" data-id="${docSnap.id}" style="flex:1; background:#FBEAEA; color:#B23A3A; border:none; border-radius:8px; padding:7px; font-size:12px; font-weight:600; cursor:pointer;">Excluir</button>
+          </div>
+        `;
+        lista.appendChild(card);
+      });
+
+      document.querySelectorAll(".botao-editar-tecnica").forEach(botao => {
+        botao.addEventListener("click", () => editarTecnica(botao.dataset.id));
+      });
+      document.querySelectorAll(".botao-excluir-tecnica").forEach(botao => {
+        botao.addEventListener("click", () => excluirTecnica(botao.dataset.id));
+      });
+    }
+
+    function renderFasesConstrutor() {
+      const container = document.getElementById("lista-fases-construtor");
+      container.innerHTML = "";
+      if (fasesConstrutor.length === 0) {
+        container.innerHTML = "<p style='font-size:11.5px; color:#B0AC9C; margin:0;'>Nenhuma fase adicionada ainda.</p>";
+        return;
+      }
+      fasesConstrutor.forEach((f, i) => {
+        const linha = document.createElement("div");
+        linha.style.cssText = "display:flex; align-items:center; justify-content:space-between; background:#FAF9F6; border:1px solid #E4E1D8; border-radius:8px; padding:7px 10px;";
+        linha.innerHTML = `<span style="font-size:12.5px; color:#1B2A4A;">${i + 1}. ${NOME_FASE[f.tipo]} — ${f.segundos}s</span>
+          <span data-i="${i}" class="botao-remover-fase" style="color:#B23A3A; cursor:pointer; font-size:15px; font-weight:700;">×</span>`;
+        container.appendChild(linha);
+      });
+      document.querySelectorAll(".botao-remover-fase").forEach(el => {
+        el.addEventListener("click", () => {
+          fasesConstrutor.splice(Number(el.dataset.i), 1);
+          renderFasesConstrutor();
+        });
+      });
+    }
+
+    document.getElementById("botao-add-fase").addEventListener("click", function () {
+      const tipo = document.getElementById("select-tipo-fase").value;
+      const segundos = parseInt(document.getElementById("input-segundos-fase").value, 10);
+      if (!segundos || segundos <= 0) {
+        alert("Informe quantos segundos essa fase deve durar.");
+        return;
+      }
+      fasesConstrutor.push({ tipo, segundos });
+      document.getElementById("input-segundos-fase").value = "";
+      renderFasesConstrutor();
+    });
+
+    document.getElementById("botao-nova-tecnica").addEventListener("click", function () {
+      tecnicaEditandoId = null;
+      fasesConstrutor = [];
+      document.getElementById("input-nome-tecnica").value = "";
+      document.getElementById("input-musica-tecnica").value = "";
+      document.getElementById("titulo-construtor").textContent = "Nova técnica";
+      document.getElementById("msg-tecnica").style.display = "none";
+      renderFasesConstrutor();
+      document.getElementById("construtor-tecnica").style.display = "flex";
+    });
+
+    document.getElementById("botao-cancelar-tecnica").addEventListener("click", function () {
+      document.getElementById("construtor-tecnica").style.display = "none";
+    });
+
+    async function editarTecnica(id) {
+      const snap = await getDoc(doc(db, "respiracao_config", id));
+      if (!snap.exists()) return;
+      const dados = snap.data();
+     tecnicaEditandoId = id;
+      fasesConstrutor = (dados.fases || []).map(f => ({ tipo: f.tipo, segundos: f.segundos }));
+      document.getElementById("input-nome-tecnica").value = dados.nomeExibicao || "";
+      document.getElementById("input-musica-tecnica").value = dados.musicaFundo || "";
+      document.getElementById("titulo-construtor").textContent = "Editar técnica";
+      document.getElementById("msg-tecnica").style.display = "none";
+      renderFasesConstrutor();
+      document.getElementById("construtor-tecnica").style.display = "flex";
+    }
+
+    async function excluirTecnica(id) {
+      if (!confirm("Tem certeza que deseja excluir essa técnica? Essa ação não pode ser desfeita.")) return;
+      await deleteDoc(doc(db, "respiracao_config", id));
+      carregarTecnicasAdmin();
+    }
+
+    document.getElementById("botao-salvar-tecnica").addEventListener("click", async function () {
+      const nomeExibicao = document.getElementById("input-nome-tecnica").value.trim();
+      const musicaFundo = document.getElementById("input-musica-tecnica").value.trim();
+      const msg = document.getElementById("msg-tecnica");
+
+      if (!nomeExibicao || fasesConstrutor.length === 0) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Dê um nome à técnica e adicione ao menos uma fase.";
+        msg.style.display = "block";
+        return;
+      }
+
+      try {
+        if (tecnicaEditandoId) {
+          await setDoc(doc(db, "respiracao_config", tecnicaEditandoId), { nomeExibicao, fases: fasesConstrutor, musicaFundo, atualizadoEm: serverTimestamp() });
+        } else {
+          await addDoc(collection(db, "respiracao_config"), { nomeExibicao, fases: fasesConstrutor, musicaFundo, criadoEm: serverTimestamp() });
+        }
+        msg.style.color = "#3A6650";
+        msg.textContent = "✅ Técnica salva com sucesso!";
+        msg.style.display = "block";
+        setTimeout(() => {
+          document.getElementById("construtor-tecnica").style.display = "none";
+          carregarTecnicasAdmin();
+        }, 700);
+      } catch (erro) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Erro ao salvar: " + erro.message;
+        msg.style.display = "block";
+      }
+    });
+
+    // ---------- FIM TÉCNICAS DE RESPIRAÇÃO ----------
+
+    document.getElementById("botao-adicionar-conteudo").addEventListener("click", async function () {
+      const area = document.getElementById("select-area").value;
+      const faixaEtaria = document.getElementById("select-faixa").value;
+      const subtipo = document.getElementById("select-subtipo").value;
+      const tipo = subtipo === "Áudio" ? "Áudio" : subtipo === "Vídeo" ? "Vídeo" : "Material (PDF)";
+      const titulo = document.getElementById("input-titulo").value.trim();
+      const descricao = document.getElementById("input-descricao").value.trim();
+      const link = document.getElementById("input-link").value.trim();
+      const publicado = document.getElementById("select-publicado").value === "true";
+      const msg = document.getElementById("msg-conteudo");
+
+      if (!titulo || !link) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Preencha o título e o link do material.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const payload = {
+        area,
+        faixaEtaria,
+        subtipo,
+        tipo,
+        categoria: area,
+        titulo,
+        descricao,
+        link,
+        publicado,
+        atualizadoEm: serverTimestamp()
+      };
+
+      if (area === "Virtudes") {
+        payload.virtude = document.getElementById("select-virtude").value;
+        payload.encontro = document.getElementById("select-encontro").value;
+      } else {
+        payload.virtude = "";
+        payload.encontro = "";
+      }
+
+      try {
+        if (conteudoEditandoId) {
+          await setDoc(doc(db, "conteudo", conteudoEditandoId), payload, { merge: true });
+          msg.textContent = "Material atualizado com sucesso.";
+        } else {
+          payload.criadoEm = serverTimestamp();
+          await addDoc(collection(db, "conteudo"), payload);
+          msg.textContent = "Material cadastrado com sucesso.";
+        }
+        msg.style.color = "#3A6650";
+        msg.style.display = "block";
+        limparFormularioConteudo();
+        await carregarItensPublicados();
+      } catch (erro) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Não foi possível salvar: " + erro.message;
+        msg.style.display = "block";
+      }
+    });
+
+
+    // ---------- GOOGLE DRIVE / PASTA PROTEGIDA ----------
+
+    async function carregarConfiguracaoDrive() {
+      const status = document.getElementById("drive-pasta-status");
+      try {
+        const snap = await getDoc(doc(db, "configuracoes", GOOGLE_CONFIG_DOC));
+        if (snap.exists()) googleDriveConfig = { ...googleDriveConfig, ...snap.data() };
+        if (status) {
+          status.textContent = googleDriveConfig.folderId
+            ? `Pasta selecionada: ${googleDriveConfig.folderName || "Materiais do App"}`
+            : "Nenhuma pasta protegida selecionada.";
+          status.style.color = googleDriveConfig.folderId ? "#3A6650" : "#918D7E";
+        }
+      } catch (erro) {
+        console.error("Erro ao carregar configuração Drive:", erro);
+        if (status) status.textContent = "Não foi possível carregar a configuração do Drive.";
+      }
+    }
+
+    function garantirPickerCarregado() {
+      return new Promise((resolve, reject) => {
+        if (pickerCarregado && window.google?.picker) return resolve();
+        if (!window.gapi) return reject(new Error("Google Picker ainda está carregando. Aguarde alguns segundos."));
+        gapi.load("picker", {
+          callback: () => { pickerCarregado = true; resolve(); },
+          onerror: () => reject(new Error("Não foi possível carregar o seletor do Google Drive."))
+        });
+      });
+    }
+
+    function obterTokenDrive() {
+      return new Promise((resolve, reject) => {
+        if (driveAccessToken) return resolve(driveAccessToken);
+        if (!googleDriveConfig.clientId) return reject(new Error("A configuração OAuth do Google Drive não foi encontrada."));
+        if (!window.google?.accounts?.oauth2) return reject(new Error("A autorização Google ainda está carregando. Aguarde alguns segundos."));
+
+        if (!driveTokenClient) {
+          driveTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: googleDriveConfig.clientId,
+            scope: "https://www.googleapis.com/auth/drive",
+            callback: (resp) => {
+              if (resp.error) return reject(new Error("O Google não autorizou o acesso ao Drive."));
+              driveAccessToken = resp.access_token;
+              resolve(driveAccessToken);
+            }
+          });
+        }
+        driveTokenClient.requestAccessToken({ prompt: "consent" });
+      });
+    }
+
+    async function selecionarPastaDrive() {
+      try {
+        await carregarConfiguracaoDrive();
+        if (!googleDriveConfig.clientId || !googleDriveConfig.apiKey) {
+          alert("A configuração Google Drive do projeto não foi encontrada.");
+          return;
+        }
+        await garantirPickerCarregado();
+        const token = await obterTokenDrive();
+
+        const view = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+          .setSelectFolderEnabled(true)
+          .setIncludeFolders(true);
+
+        const picker = new google.picker.PickerBuilder()
+          .addView(view)
+          .setOAuthToken(token)
+          .setDeveloperKey(googleDriveConfig.apiKey)
+          .setTitle("Selecione a pasta de materiais do app")
+          .setCallback(async data => {
+            if (data.action === google.picker.Action.PICKED && data.docs?.[0]) {
+              const pasta = data.docs[0];
+              googleDriveConfig.folderId = pasta.id;
+              googleDriveConfig.folderName = pasta.name || "Materiais do App";
+              try {
+                await setDoc(doc(db, "configuracoes", GOOGLE_CONFIG_DOC), {
+                  folderId: googleDriveConfig.folderId,
+                  folderName: googleDriveConfig.folderName,
+                  atualizadoEm: serverTimestamp()
+                }, { merge: true });
+                await carregarConfiguracaoDrive();
+                alert("Pasta protegida salva.");
+              } catch (erro) {
+                console.error(erro);
+                alert("Não foi possível salvar a pasta selecionada.");
+              }
+            }
+          })
+          .build();
+
+        picker.setVisible(true);
+      } catch (erro) {
+        console.error(erro);
+        alert(erro.message || "Não foi possível abrir o Google Drive.");
+      }
+    }
+
+    async function concederAcessoPasta(email, token) {
+      if (!googleDriveConfig.folderId) throw new Error("Nenhuma pasta protegida foi selecionada.");
+      const resposta = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(googleDriveConfig.folderId)}/permissions?sendNotificationEmail=false&fields=id`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ type: "user", role: "reader", emailAddress: email })
+        }
+      );
+      const dados = await resposta.json().catch(() => ({}));
+      if (!resposta.ok) throw new Error(dados?.error?.message || "Não foi possível conceder acesso à pasta.");
+      return dados.id || "";
+    }
+
+    async function sincronizarAcessosDrive() {
+      const msg = document.getElementById("msg-drive-sync");
+      msg.style.display = "block";
+      msg.style.color = "#79778E";
+      msg.textContent = "Preparando sincronização...";
+
+      try {
+        await carregarConfiguracaoDrive();
+        if (!googleDriveConfig.folderId) {
+          msg.style.color = "#B23A3A";
+          msg.textContent = "Selecione primeiro a pasta protegida do app.";
+          return;
+        }
+
+        const token = await obterTokenDrive();
+        const snap = await getDocs(collection(db, "clientes"));
+        const clientes = [];
+        snap.forEach(d => clientes.push({ id: d.id, ...d.data() }));
+
+        let ok = 0, falhas = 0;
+        for (const cliente of clientes) {
+          if (!cliente.email || cliente.ativo === false) continue;
+          msg.textContent = `Sincronizando ${ok + falhas + 1} de ${clientes.length}...`;
+          try {
+            const permissionId = await concederAcessoPasta(cliente.email, token);
+            await setDoc(doc(db, "clientes", cliente.id), {
+              driveAutorizado: true,
+              drivePermissionId: permissionId,
+              drivePastaId: googleDriveConfig.folderId,
+              driveSincronizadoEm: serverTimestamp()
+            }, { merge: true });
+            ok++;
+          } catch (erro) {
+            console.error("Falha Drive para", cliente.email, erro);
+            falhas++;
+          }
+        }
+
+        msg.style.color = falhas ? "#8A6A3B" : "#3A6650";
+        msg.textContent = falhas
+          ? `Sincronização concluída: ${ok} autorizado(s), ${falhas} pendente(s).`
+          : `✅ ${ok} facilitador(es) sincronizado(s) com a pasta protegida.`;
+        await carregarFacilitadores();
+      } catch (erro) {
+        console.error(erro);
+        msg.style.color = "#B23A3A";
+        msg.textContent = erro.message || "Não foi possível sincronizar os acessos.";
+      }
+    }
+
+    document.getElementById("botao-selecionar-pasta-drive")?.addEventListener("click", selecionarPastaDrive);
+    document.getElementById("botao-sincronizar-drive")?.addEventListener("click", sincronizarAcessosDrive);
+
+    document.getElementById("botao-cadastrar-cliente").addEventListener("click", async function () {
+      const email = document.getElementById("input-email-cliente").value.trim();
+      const senhaDigitada = document.getElementById("input-senha-cliente").value.trim();
+      const nome = document.getElementById("input-nome-cliente").value.trim();
+      const nascimento = document.getElementById("input-nascimento-cliente").value;
+      const telefone = document.getElementById("input-telefone-cliente").value.trim();
+      const msg = document.getElementById("msg-cliente");
+
+      if (!email) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Preencha um e-mail válido.";
+        msg.style.display = "block";
+        return;
+      }
+      if (senhaDigitada && senhaDigitada.length < 6) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Se for definir uma senha, ela precisa ter pelo menos 6 caracteres.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const enviarLinkPorEmail = !senhaDigitada;
+      const senhaFinal = senhaDigitada || (Math.random().toString(36).slice(-10) + "Aa1!");
+
+      const appAuxiliar = getApps().find(a => a.name === "Auxiliar") || initializeApp(firebaseConfig, "Auxiliar");
+      const authAuxiliar = getAuth(appAuxiliar);
+
+      try {
+        const credencial = await createUserWithEmailAndPassword(authAuxiliar, email, senhaFinal);
+        await setDoc(doc(getFirestore(appAuxiliar), "clientes", credencial.user.uid), {
+          email, nome, nascimento, telefone, ativo: true, criadoEm: serverTimestamp()
+        });
+        await signOut(authAuxiliar);
+
+        let driveLiberado = false;
+        try {
+          await carregarConfiguracaoDrive();
+          if (googleDriveConfig.folderId && googleDriveConfig.clientId) {
+            const token = await obterTokenDrive();
+            const permissionId = await concederAcessoPasta(email, token);
+            await setDoc(doc(db, "clientes", credencial.user.uid), {
+              driveAutorizado: true,
+              drivePermissionId: permissionId,
+              drivePastaId: googleDriveConfig.folderId,
+              driveSincronizadoEm: serverTimestamp()
+            }, { merge: true });
+            driveLiberado = true;
+          }
+        } catch (erroDrive) {
+          console.warn("Cadastro concluído; acesso ao Drive pendente:", erroDrive);
+        }
+
+        if (enviarLinkPorEmail) {
+          await sendPasswordResetEmail(auth, email);
+          msg.style.color = "#3A6650";
+          msg.textContent = "✅ Facilitador cadastrado! Um e-mail foi enviado para definir a senha." + (driveLiberado ? " Acesso aos materiais liberado." : " Acesso ao Drive poderá ser sincronizado em Configurações.");
+        } else {
+          msg.style.color = "#3A6650";
+          msg.textContent = "✅ Facilitador cadastrado! Agora repasse o e-mail e a senha." + (driveLiberado ? " Acesso aos materiais liberado." : " Acesso ao Drive poderá ser sincronizado em Configurações.");
+        }
+        msg.style.display = "block";
+        document.getElementById("input-email-cliente").value = "";
+        document.getElementById("input-senha-cliente").value = "";
+        document.getElementById("input-nome-cliente").value = "";
+        document.getElementById("input-nascimento-cliente").value = "";
+        document.getElementById("input-telefone-cliente").value = "";
+        await carregarFacilitadores();
+      } catch (erro) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Erro: " + (erro.code === "auth/email-already-in-use" ? "esse e-mail já está cadastrado." : erro.message);
+        msg.style.display = "block";
+      }
+    });
+
+
+    // ---------- FACILITADORES ----------
+
+    let facilitadoresCadastrados = [];
+
+    function escaparHtml(valor = "") {
+      return String(valor)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatarNascimento(valor) {
+      if (!valor) return "Data não informada";
+      const partes = String(valor).split("-");
+      if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      return valor;
+    }
+
+    function renderizarFacilitadores() {
+      const lista = document.getElementById("lista-facilitadores");
+      const contador = document.getElementById("contador-facilitadores");
+      if (!lista || !contador) return;
+
+      const termo = (document.getElementById("busca-facilitadores")?.value || "").trim().toLowerCase();
+      const filtrados = facilitadoresCadastrados.filter(item => {
+        const texto = [item.nome, item.email, item.telefone].filter(Boolean).join(" ").toLowerCase();
+        return !termo || texto.includes(termo);
+      });
+
+      contador.textContent = `${facilitadoresCadastrados.length} facilitador${facilitadoresCadastrados.length === 1 ? "" : "es"} cadastrado${facilitadoresCadastrados.length === 1 ? "" : "s"}`;
+
+      if (!filtrados.length) {
+        lista.innerHTML = `<div style="background:#FAF9F5; border:1px solid #E8E5DC; border-radius:11px; padding:13px;">
+          <p style="font-size:12px; color:#918D7E; margin:0;">${termo ? "Nenhum facilitador encontrado nessa busca." : "Nenhum facilitador cadastrado foi encontrado."}</p>
+        </div>`;
+        return;
+      }
+
+      lista.innerHTML = filtrados.map(item => {
+        const ativo = item.ativo !== false;
+        return `
+        <div style="background:#FAF9F5; border:1px solid #E8E5DC; border-radius:11px; padding:13px 14px;">
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+            <div style="min-width:0; flex:1;">
+              <p style="font-size:13px; color:#1B2A4A; font-weight:650; margin:0 0 5px;">${escaparHtml(item.nome || "Nome não informado")}</p>
+              <p style="font-size:11.5px; color:#666574; margin:0 0 3px; word-break:break-word;">${escaparHtml(item.email || "E-mail não informado")}</p>
+              <p style="font-size:11px; color:#918D7E; margin:0;">${escaparHtml(item.telefone || "Telefone não informado")} · ${escaparHtml(formatarNascimento(item.nascimento))}</p>
+              <p style="font-size:10.5px; color:${item.driveAutorizado ? "#3A6650" : "#A18455"}; margin:4px 0 0;">${item.driveAutorizado ? "Materiais privados: autorizado" : "Materiais privados: pendente"}</p>
+            </div>
+            <span style="background:${ativo ? "#EDF4EE" : "#F3EEE8"}; color:${ativo ? "#44684D" : "#86695B"}; border-radius:999px; padding:5px 9px; font-size:10.5px; font-weight:600;">${ativo ? "Ativo" : "Desativado"}</span>
+          </div>
+
+          <div style="display:flex; gap:7px; flex-wrap:wrap; margin-top:11px;">
+            <button type="button" class="acao-facilitador" data-acao="editar" data-id="${item.id}"
+              style="background:#FFFFFF; color:#1B2A4A; border:1px solid #DCD9CF; border-radius:8px; padding:7px 10px; font-size:10.8px; font-weight:600; cursor:pointer;">Editar</button>
+            <button type="button" class="acao-facilitador" data-acao="status" data-id="${item.id}"
+              style="background:#FFFFFF; color:#6A7252; border:1px solid #DCD9CF; border-radius:8px; padding:7px 10px; font-size:10.8px; font-weight:600; cursor:pointer;">${ativo ? "Desativar" : "Reativar"}</button>
+            <button type="button" class="acao-facilitador" data-acao="excluir" data-id="${item.id}"
+              style="background:#FFFFFF; color:#9A4A3B; border:1px solid #E4CCC4; border-radius:8px; padding:7px 10px; font-size:10.8px; font-weight:600; cursor:pointer;">Excluir</button>
+          </div>
+        </div>
+      `}).join("");
+
+      lista.querySelectorAll(".acao-facilitador").forEach(botao => {
+        botao.addEventListener("click", () => gerenciarFacilitador(botao.dataset.acao, botao.dataset.id));
+      });
+    }
+
+
+    function obterFacilitador(id) {
+      return facilitadoresCadastrados.find(item => item.id === id);
+    }
+
+    async function gerenciarFacilitador(acao, id) {
+      const item = obterFacilitador(id);
+      if (!item) return;
+
+      if (acao === "editar") {
+        const nome = prompt("Nome completo:", item.nome || "");
+        if (nome === null) return;
+        const telefone = prompt("Telefone:", item.telefone || "");
+        if (telefone === null) return;
+        const nascimento = prompt("Data de nascimento (AAAA-MM-DD):", item.nascimento || "");
+        if (nascimento === null) return;
+
+        try {
+          await setDoc(doc(db, "clientes", id), {
+            nome: nome.trim(),
+            telefone: telefone.trim(),
+            nascimento: nascimento.trim()
+          }, { merge: true });
+          await carregarFacilitadores();
+          alert("Facilitador atualizado com sucesso.");
+        } catch (erro) {
+          console.error("Erro ao editar facilitador:", erro);
+          alert("Não foi possível editar. Código: " + (erro?.code || "erro-desconhecido") + "\n" + (erro?.message || ""));
+        }
+        return;
+      }
+
+      if (acao === "status") {
+        const novoStatus = item.ativo === false;
+        const texto = novoStatus ? "reativar" : "desativar";
+        if (!confirm(`Deseja ${texto} o acesso de ${item.nome || item.email || "este facilitador"}?`)) return;
+        try {
+          await setDoc(doc(db, "clientes", id), { ativo: novoStatus }, { merge: true });
+          await carregarFacilitadores();
+          alert(novoStatus ? "Facilitador reativado." : "Facilitador desativado.");
+        } catch (erro) {
+          console.error("Erro ao alterar status:", erro);
+          alert("Não foi possível alterar o status. Código: " + (erro?.code || "erro-desconhecido") + "\n" + (erro?.message || ""));
+        }
+        return;
+      }
+
+      if (acao === "excluir") {
+        const nome = item.nome || item.email || "este facilitador";
+        if (!confirm(`Excluir ${nome} da lista de facilitadores?\n\nEsta ação exige confirmação para evitar exclusões acidentais.`)) return;
+        try {
+          await deleteDoc(doc(db, "clientes", id));
+          await carregarFacilitadores();
+        } catch (erro) {
+          console.error(erro);
+          alert("Não foi possível excluir. Código: " + (erro?.code || "erro-desconhecido") + "\n" + (erro?.message || ""));
+        }
+      }
+    }
+
+    async function carregarFacilitadores() {
+      const lista = document.getElementById("lista-facilitadores");
+      const contador = document.getElementById("contador-facilitadores");
+      if (!lista || !contador) return;
+
+      lista.innerHTML = "<p style='font-size:12px; color:#918D7E; margin:0;'>Carregando facilitadores...</p>";
+      contador.textContent = "Carregando...";
+
+      try {
+        const snap = await getDocs(collection(db, "clientes"));
+        facilitadoresCadastrados = [];
+        snap.forEach(docSnap => facilitadoresCadastrados.push({ id: docSnap.id, ...docSnap.data() }));
+        facilitadoresCadastrados.sort((a, b) => (a.nome || a.email || "").localeCompare(b.nome || b.email || "", "pt-BR"));
+        renderizarFacilitadores();
+      } catch (erro) {
+        console.error("Erro ao carregar facilitadores:", erro);
+        contador.textContent = "Não foi possível carregar";
+        lista.innerHTML = `<div style="background:#FFF6F2; border:1px solid #E9CFC4; border-radius:11px; padding:13px;">
+          <p style="font-size:12px; color:#9A4A3B; margin:0;">Não foi possível carregar os facilitadores. Nenhum cadastro foi alterado.</p>
+        </div>`;
+      }
+    }
+
+    document.getElementById("busca-facilitadores")?.addEventListener("input", renderizarFacilitadores);
+    document.getElementById("botao-atualizar-facilitadores")?.addEventListener("click", carregarFacilitadores);
+
+    // ---------- AVISOS ----------
+
+    async function carregarAvisosAdmin() {
+      const lista = document.getElementById("lista-avisos-enviados");
+      lista.innerHTML = "<p style='font-size:12px; color:#918D7E;'>Carregando...</p>";
+      const snap = await getDocs(collection(db, "mensagens"));
+      const avisos = [];
+      snap.forEach(docSnap => avisos.push({ id: docSnap.id, ...docSnap.data() }));
+      avisos.sort((a, b) => (b.criadoEm?.seconds || 0) - (a.criadoEm?.seconds || 0));
+
+      lista.innerHTML = "";
+      if (avisos.length === 0) {
+        lista.innerHTML = "<p style='font-size:12px; color:#918D7E;'>Nenhum aviso enviado ainda.</p>";
+        return;
+      }
+      avisos.forEach(aviso => {
+        const data = aviso.criadoEm?.seconds ? new Date(aviso.criadoEm.seconds * 1000).toLocaleDateString("pt-BR") : "";
+        const card = document.createElement("div");
+        card.style.cssText = "background:#FFFFFF; border-radius:12px; padding:12px 14px; box-shadow:0 3px 10px rgba(27,42,74,0.06); margin-top:8px;";
+        card.innerHTML = `
+          <p style="font-size:12.5px; margin:0; color:#3A3A3A;">${aviso.texto}</p>
+          <p style="font-size:10.5px; color:#918D7E; margin:4px 0 8px;">${data}</p>
+          <button class="botao-excluir-aviso" data-id="${aviso.id}" style="width:100%; background:#FBEAEA; color:#B23A3A; border:none; border-radius:8px; padding:7px; font-size:12px; font-weight:600; cursor:pointer;">Excluir</button>
+        `;
+        lista.appendChild(card);
+      });
+
+      document.querySelectorAll(".botao-excluir-aviso").forEach(botao => {
+        botao.addEventListener("click", () => excluirAviso(botao.dataset.id));
+      });
+    }
+
+    async function excluirAviso(id) {
+      if (!confirm("Tem certeza que deseja excluir esse aviso? Essa ação não pode ser desfeita.")) return;
+      await deleteDoc(doc(db, "mensagens", id));
+      carregarAvisosAdmin();
+    }
+
+    document.getElementById("botao-enviar-aviso").addEventListener("click", async function () {
+      const texto = document.getElementById("input-texto-aviso").value.trim();
+      const msg = document.getElementById("msg-aviso");
+
+      if (!texto) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Escreva o texto do aviso antes de enviar.";
+        msg.style.display = "block";
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "mensagens"), { texto, criadoEm: serverTimestamp() });
+        msg.style.color = "#3A6650";
+        msg.textContent = "✅ Aviso enviado a todos os clientes!";
+        msg.style.display = "block";
+        document.getElementById("input-texto-aviso").value = "";
+        carregarAvisosAdmin();
+      } catch (erro) {
+        msg.style.color = "#B23A3A";
+        msg.textContent = "Erro ao enviar: " + erro.message;
+        msg.style.display = "block";
+      }
+    });
+
+    // ---------- FIM AVISOS ----------
+  </script>
+
+</body>
+</html>
