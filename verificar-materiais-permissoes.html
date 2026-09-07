@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mirai Kokoro · Verificar Materiais</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f5f4ef;color:#1d2d3a;margin:0;padding:22px}
+main{max-width:900px;margin:auto}h1{font-family:Georgia,serif;font-size:32px;margin-bottom:5px}
+p{color:#65706f}button{padding:11px 16px;border:0;border-radius:9px;background:#273d4d;color:white;font-weight:700;cursor:pointer}
+.card{background:white;border:1px solid #e3e3dd;border-radius:13px;padding:14px;margin:10px 0}
+.row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center}
+.title{font-weight:700}.meta{font-size:12px;color:#747b77;margin-top:3px}.status{font-size:12px;font-weight:800}
+.ok{color:#486148}.trash,.missing{color:#9b4f42}.access,.unknown{color:#8a6c31}
+#summary{margin:16px 0;font-weight:700}#login{margin:16px 0}
+input{padding:10px;border:1px solid #ccc;border-radius:8px;margin:4px 0;width:min(360px,90%)}
+</style>
+
+<style id="mirai-permissoes-css">
+.permBox{margin-top:18px;padding:16px;background:#fff;border:1px solid #deded8;border-radius:13px}
+.permActions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+.permActions button{background:#536044}
+.perm-note{font-size:13px;color:#6b726e}
+.public{color:#a05042}.restricted{color:#486148}.editor{color:#9b4f42}.printblock{color:#8a6c31}
+</style>
+</head>
+<body><main>
+<h1>Verificação dos Materiais</h1>
+<p>Página de diagnóstico separada. Ela apenas lê os registros e verifica o estado dos links; não altera arquivos nem permissões.</p>
+<div id="login">
+  <input id="email" type="email" placeholder="E-mail do administrador"><br>
+  <input id="senha" type="password" placeholder="Senha"><br><br>
+  <button id="entrar">Entrar e verificar</button>
+</div>
+<div id="summary"></div><div id="list"></div>
+<div class="permBox">
+<h2>Proteção e permissões</h2>
+<p class="perm-note">Verifica os mesmos materiais sem alterar nada. A correção só acontece quando você clicar no botão de corrigir.</p>
+<div class="permActions">
+<button id="auditPerm" type="button">Verificar proteção</button>
+<button id="fixPerm" type="button" style="display:none">Corrigir proteção encontrada</button>
+</div>
+<div id="permSummary"></div><div id="permList"></div>
+</div>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firebaseConfig = {
+      apiKey: "AIzaSyCuUQi_s4v0Iat3FkzEfY06lX1NIaDAJ3Y",
+      authDomain: "mirai-kokoro.firebaseapp.com",
+      projectId: "mirai-kokoro",
+      storageBucket: "mirai-kokoro.firebasestorage.app",
+      messagingSenderId: "601277675162",
+      appId: "1:601277675162:web:b2ab41cbb4709b008a9123"
+    };
+const app=initializeApp(firebaseConfig,"AuditoriaMirai");
+const auth=getAuth(app), db=getFirestore(app);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const RX=[/\/d\/([A-Za-z0-9_-]{10,})/,/[?&]id=([A-Za-z0-9_-]{10,})/,/\/folders\/([A-Za-z0-9_-]{10,})/];
+function idFrom(u){for(const r of RX){const m=String(u||"").match(r);if(m)return m[1]}return""}
+
+async function driveConfig(){
+  const names=["google_drive_v2","google_drive"];
+  for(const n of names){const s=await getDoc(doc(db,"configuracoes",n));if(s.exists()) return s.data();}
+  return {};
+}
+function tokenClient(cfg){
+ return new Promise((resolve,reject)=>{
+   if(!window.google?.accounts?.oauth2) return reject(Error("Google Drive ainda não carregou."));
+   const clientId=cfg.clientId||cfg.client_id||cfg.oauthClientId||cfg.googleClientId;
+   if(!clientId) return reject(Error("Client ID do Drive não encontrado."));
+   const c=google.accounts.oauth2.initTokenClient({
+     client_id:clientId,
+     scope:"https://www.googleapis.com/auth/drive",
+     callback:r=>r?.access_token?resolve(r.access_token):reject(Error("Não foi possível autorizar o Drive."))
+   });
+   c.requestAccessToken({prompt:"consent"});
+ });
+}
+async function check(id,t){
+ const r=await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?supportsAllDrives=true&fields=id,name,trashed`,{headers:{Authorization:`Bearer ${t}`}});
+ if(r.ok){const d=await r.json();return d.trashed?["trash","🗑️","Na lixeira"]:["ok","✓","Funcionando"]}
+ if(r.status===404)return["missing","✕","Não encontrado"];
+ if(r.status===401||r.status===403)return["access","🔒","Sem acesso"];
+ return["unknown","⚠","Não validado"];
+}
+async function run(){
+ const list=document.getElementById("list"), sum=document.getElementById("summary");
+ list.innerHTML="<p>Carregando…</p>";
+ const cfg=await driveConfig(), token=await tokenClient(cfg);
+ const snap=await getDocs(collection(db,"conteudo"));
+ const itens=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.publicado!==false&&String(x.link||"").trim());
+ const c={ok:0,trash:0,missing:0,access:0,unknown:0}, out=[];
+ for(let i=0;i<itens.length;i++){
+   const x=itens[i], id=idFrom(x.link);
+   const st=id?await check(id,token):["unknown","⚠","Link não reconhecido"];
+   c[st[0]]++; out.push(`<div class="card"><div class="row"><div>${st[1]}</div><div><div class="title">${esc(x.titulo||"Sem título")}</div><div class="meta">${esc(x.area||"")}${x.faixaEtaria?" · "+esc(x.faixaEtaria):""}</div></div><div class="status ${st[0]}">${st[2]}</div></div></div>`);
+   list.innerHTML=`<p>Verificando ${i+1} de ${itens.length}…</p>`;
+ }
+ sum.textContent=`${c.ok} funcionando · ${c.trash} na lixeira · ${c.missing} não encontrados · ${c.access} sem acesso · ${c.unknown} não validados`;
+ list.innerHTML=out.join("");
+}
+
+let ultimoToken="", ultimosItens=[], problemasPerm=[];
+async function permissionsFor(id,t){
+  const [fr,pr]=await Promise.all([
+    fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?supportsAllDrives=true&fields=id,name,trashed,copyRequiresWriterPermission,downloadRestrictions,parents`,{headers:{Authorization:`Bearer ${t}`}}),
+    fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}/permissions?supportsAllDrives=true&fields=permissions(id,type,role,emailAddress,allowFileDiscovery)`,{headers:{Authorization:`Bearer ${t}`}})
+  ]);
+  if(!fr.ok||!pr.ok) return {kind:"access",label:"Não foi possível verificar"};
+  const file=await fr.json(), pdata=await pr.json(), perms=pdata.permissions||[];
+  const publicPerms=perms.filter(p=>p.type==="anyone");
+  const editorPerms=perms.filter(p=>p.type==="user" && (p.role==="writer"||p.role==="organizer"||p.role==="fileOrganizer"));
+  const blocked = file.copyRequiresWriterPermission===true ||
+    file?.downloadRestrictions?.itemDownloadRestriction?.restrictedForReaders===true;
+  return {kind:publicPerms.length?"public":editorPerms.length?"editor":blocked?"printblock":"restricted",
+          label:publicPerms.length?"Público":editorPerms.length?"Há editor(es)":blocked?"Download/impressão bloqueados":"Restrito",
+          file,perms,publicPerms,editorPerms,blocked};
+}
+async function auditPermissions(){
+  const ps=document.getElementById("permSummary"), pl=document.getElementById("permList"), btn=document.getElementById("fixPerm");
+  ps.textContent="Verificando proteção…"; pl.innerHTML=""; btn.style.display="none";
+  try{
+    const cfg=await driveConfig(); ultimoToken=await tokenClient(cfg);
+    const snap=await getDocs(collection(db,"conteudo"));
+    ultimosItens=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.publicado!==false&&String(x.link||"").trim());
+    problemasPerm=[]; let ok=0,pub=0,edit=0,block=0,unk=0; const rows=[];
+    for(let i=0;i<ultimosItens.length;i++){
+      const x=ultimosItens[i], id=idFrom(x.link);
+      if(!id){unk++;continue}
+      const a=await permissionsFor(id,ultimoToken);
+      if(a.kind==="restricted")ok++; else if(a.kind==="public")pub++; else if(a.kind==="editor")edit++; else if(a.kind==="printblock")block++; else unk++;
+      if(a.kind!=="restricted") problemasPerm.push({x,id,a});
+      rows.push(`<div class="card"><div class="row"><div>${a.kind==="restricted"?"✓":a.kind==="public"?"🌐":a.kind==="editor"?"✏️":a.kind==="printblock"?"🖨️":"⚠"}</div><div><div class="title">${esc(x.titulo||"Sem título")}</div><div class="meta">${esc(x.area||"")}</div></div><div class="status ${a.kind}">${esc(a.label)}</div></div></div>`);
+      ps.textContent=`Verificando ${i+1} de ${ultimosItens.length}…`;
+    }
+    ps.textContent=`${ok} restritos · ${pub} públicos · ${edit} com editor(es) · ${block} com download/impressão bloqueados · ${unk} não validados`;
+    pl.innerHTML=rows.join("");
+    if(problemasPerm.length) btn.style.display="inline-block";
+  }catch(e){ps.textContent="⚠ "+(e.message||e)}
+}
+async function fixPermissions(){
+  if(!confirm("Corrigir os problemas encontrados? Isso removerá acesso público e liberará download/impressão para leitores. Permissões de proprietário não serão alteradas.")) return;
+  const ps=document.getElementById("permSummary"); let fixed=0,failed=0;
+  for(const p of problemasPerm){
+    try{
+      // Remove only 'anyone' permissions. Never removes named users/owners automatically.
+      for(const perm of (p.a.publicPerms||[])){
+        const r=await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(p.id)}/permissions/${encodeURIComponent(perm.id)}?supportsAllDrives=true`,{method:"DELETE",headers:{Authorization:`Bearer ${ultimoToken}`}});
+        if(!r.ok && r.status!==404) throw Error("Falha ao remover acesso público");
+      }
+      // Allow readers to download/print/copy where the Drive API permits the owner to set it.
+      let r=await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(p.id)}?supportsAllDrives=true&fields=id`,{
+        method:"PATCH",headers:{Authorization:`Bearer ${ultimoToken}`,"Content-Type":"application/json"},
+        body:JSON.stringify({downloadRestrictions:{itemDownloadRestriction:{restrictedForReaders:false,restrictedForWriters:false}}})
+      });
+      if(!r.ok){
+        r=await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(p.id)}?supportsAllDrives=true&fields=id`,{
+          method:"PATCH",headers:{Authorization:`Bearer ${ultimoToken}`,"Content-Type":"application/json"},
+          body:JSON.stringify({copyRequiresWriterPermission:false})
+        });
+      }
+      fixed++;
+    }catch(e){failed++}
+  }
+  ps.textContent=`Correção concluída: ${fixed} processados · ${failed} com falha. Verificando novamente…`;
+  await auditPermissions();
+}
+document.getElementById("auditPerm").onclick=auditPermissions;
+document.getElementById("fixPerm").onclick=fixPermissions;
+
+document.getElementById("entrar").onclick=async()=>{
+ try{
+   await signInWithEmailAndPassword(auth,document.getElementById("email").value.trim(),document.getElementById("senha").value);
+   document.getElementById("login").style.display="none";
+   await run();
+ }catch(e){document.getElementById("summary").textContent="⚠ "+(e.message||e);}
+};
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</body></html>
