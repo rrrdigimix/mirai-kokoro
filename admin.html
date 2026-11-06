@@ -904,6 +904,7 @@ button,.btn,.action{
       <small id="capa-cartao-padrao">Prévia padrão da Biblioteca</small>
     </div>
     <button id="remover-capa-cartao" class="mirai-btn" type="button" hidden>Usar prévia padrão</button>
+    <button id="salvar-capa-cartao" class="mirai-btn" type="button" hidden disabled>Salvar capa</button>
     <p id="status-capa-cartao" role="status"></p>
   </fieldset>
 
@@ -1071,7 +1072,7 @@ button,.btn,.action{
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp, doc, getDoc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCuUQi_s4v0Iat3FkzEfY06lX1NIaDAJ3Y",
@@ -1357,14 +1358,18 @@ button,.btn,.action{
     const arquivoCapa = document.getElementById("input-capa-cartao");
     const imagemCapa = document.getElementById("preview-capa-cartao");
     const removerCapa = document.getElementById("remover-capa-cartao");
+    const salvarCapa = document.getElementById("salvar-capa-cartao");
     const statusCapa = document.getElementById("status-capa-cartao");
     let capaAtual = "";
     let capaAlterada = false;
     let formatoAlterado = false;
     let lendoCapa = false;
+    let salvandoCapa = false;
     let revisaoCapa = 0;
 
     function mostrarCapaCartao() {
+      salvarCapa.hidden = !conteudoEditandoId;
+      salvarCapa.disabled = lendoCapa || salvandoCapa || !(capaAlterada || formatoAlterado);
       const vertical = formatoCapa.value === "vertical";
       document.getElementById("quadro-capa-cartao").style.aspectRatio = vertical ? "3 / 4" : "16 / 9";
       document.getElementById("medida-capa-cartao").textContent =
@@ -1397,16 +1402,54 @@ button,.btn,.action{
       iniciarCapaCartao({ orientacaoCapa: formatoCapa.value });
       capaAlterada = true;
       formatoAlterado = true;
+      statusCapa.textContent = "Salve para voltar à prévia padrão.";
+      mostrarCapaCartao();
+    });
+
+    salvarCapa.addEventListener("click", async () => {
+      if (salvarCapa.disabled || !conteudoEditandoId) return;
+      const id = conteudoEditandoId;
+      const revisao = revisaoCapa;
+      const dados = {};
+      if (capaAlterada) dados.capaCartao = capaAtual;
+      if (formatoAlterado) dados.orientacaoCapa = formatoCapa.value;
+      salvandoCapa = true;
+      arquivoCapa.disabled = formatoCapa.disabled = removerCapa.disabled = true;
+      statusCapa.textContent = "Salvando a capa…";
+      mostrarCapaCartao();
+      try {
+        await updateDoc(doc(db, "conteudo", id), { ...dados, atualizadoEm: serverTimestamp() });
+        const item = itensPublicados.find(material => material.id === id);
+        if (item) Object.assign(item, dados);
+        if (revisao === revisaoCapa) {
+          capaAlterada = formatoAlterado = false;
+          statusCapa.textContent = "Capa salva. Atualize a Biblioteca para conferir.";
+        }
+      } catch (erro) {
+        if (revisao === revisaoCapa) {
+          statusCapa.textContent = erro.code === "permission-denied"
+            ? "Esta conta não tem permissão para salvar a capa."
+            : "Não foi possível salvar a capa. Tente novamente.";
+        }
+      } finally {
+        salvandoCapa = false;
+        arquivoCapa.disabled = formatoCapa.disabled = removerCapa.disabled = false;
+        mostrarCapaCartao();
+      }
     });
 
     arquivoCapa.addEventListener("change", async () => {
       const arquivo = arquivoCapa.files[0];
       const revisao = ++revisaoCapa;
       lendoCapa = Boolean(arquivo);
+      mostrarCapaCartao();
       if (!arquivo) { statusCapa.textContent = ""; return; }
       statusCapa.textContent = "Preparando a imagem…";
       try {
-        if (!/^image\/(png|jpeg|webp)$/.test(arquivo.type) || arquivo.size > 12 * 1024 * 1024) throw new Error();
+        if (arquivo.size > 12 * 1024 * 1024) throw new Error("A imagem passa de 12 MB.");
+        if (!/\.(png|jpe?g|webp)$/i.test(arquivo.name) && !/^image\/(png|jpeg|webp)$/.test(arquivo.type)) {
+          throw new Error("Escolha um arquivo JPG, PNG ou WebP.");
+        }
         const url = URL.createObjectURL(arquivo);
         try {
           const imagem = new Image();
@@ -1421,22 +1464,27 @@ button,.btn,.action{
             quadro.height = Math.max(1, Math.round(imagem.naturalHeight * escala));
             quadro.getContext("2d").drawImage(imagem, 0, 0, quadro.width, quadro.height);
             capa = quadro.toDataURL("image/webp", 0.8);
+            if (!capa.startsWith("data:image/webp;")) capa = quadro.toDataURL("image/jpeg", 0.85);
             escala *= 0.75;
           } while (capa.length > 120_000);
-          if (!/^data:image\/webp;base64,/.test(capa)) throw new Error();
+          if (!/^data:image\/(webp|jpeg);base64,/.test(capa)) throw new Error();
           capaAtual = capa;
           capaAlterada = true;
-          statusCapa.textContent = "Capa pronta. Salve o material para aplicar.";
+          statusCapa.textContent = `Imagem selecionada: ${arquivo.name}. Clique em ${conteudoEditandoId ? "Salvar capa" : "Salvar material"}.`;
           mostrarCapaCartao();
         } finally {
           URL.revokeObjectURL(url);
         }
-      } catch {
-        if (revisao === revisaoCapa) statusCapa.textContent = "Escolha uma imagem JPG, PNG ou WebP válida de até 12 MB.";
+      } catch (erro) {
+        if (revisao === revisaoCapa) {
+          statusCapa.textContent = erro.name === "Error" && erro.message
+            ? erro.message : "Não foi possível ler a imagem. Escolha outro JPG, PNG ou WebP.";
+          arquivoCapa.value = "";
+        }
       } finally {
         if (revisao === revisaoCapa) {
           lendoCapa = false;
-          arquivoCapa.value = "";
+          mostrarCapaCartao();
         }
       }
     });
@@ -2874,7 +2922,7 @@ button,.btn,.action{
     // ---------- FIM GESTÃO DEFINITIVA DOS ARQUIVOS DO DRIVE ----------
 
     document.getElementById("botao-adicionar-conteudo").addEventListener("click", async function () {
-      if (lendoCapa) return;
+      if (lendoCapa || salvandoCapa) return;
       const camposCapa = {};
       if (capaAlterada) camposCapa.capaCartao = capaAtual;
       if (formatoAlterado) camposCapa.orientacaoCapa = formatoCapa.value;
@@ -3127,8 +3175,8 @@ button,.btn,.action{
         }
 
         msg.style.color = "#3A6650";
-        msg.style.display = "block";
         limparFormularioConteudo();
+        msg.style.display = "block";
         await carregarItensPublicados();
       } catch (erro) {
         msg.style.color = "#B23A3A";
