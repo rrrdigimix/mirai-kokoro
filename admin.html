@@ -822,6 +822,28 @@ button,.btn,.action{
     </div>
   </div>
 
+  <details id="capas-apresentacao" style="padding:14px;border:1px solid #d8d3c9;border-radius:12px">
+    <summary>Imagens de apresentação da Biblioteca</summary>
+    <p>Escolha a área para trocar a imagem que aparece na Biblioteca.</p>
+    <label class="mirai-field"><span>Área</span>
+      <select id="apresentacao-area">
+        <option value="familias">Famílias</option>
+        <option value="respiracao">Respiração Consciente</option>
+        <option value="descobertas">Minhas Descobertas</option>
+      </select>
+    </label>
+    <label class="mirai-field"><span>Imagem de apresentação</span>
+      <input type="file" id="apresentacao-arquivo" accept="image/png,image/jpeg,image/webp">
+    </label>
+    <small>JPG, PNG ou WebP, até 12 MB. Use uma imagem vertical para Minhas Descobertas.</small>
+    <img id="apresentacao-previa" alt="Prévia da imagem de apresentação" hidden style="max-width:min(100%,260px);max-height:280px;margin:12px auto;object-fit:contain">
+    <div style="margin-top:12px">
+      <button type="button" id="apresentacao-salvar" disabled>Salvar imagem</button>
+      <button type="button" id="apresentacao-restaurar" disabled>Restaurar imagem original</button>
+    </div>
+    <p id="apresentacao-status" role="status"></p>
+  </details>
+
   <div id="banner-contexto-conteudo" class="mirai-contexto-banner" style="display:none;">
     <span id="texto-banner-contexto">Contexto preenchido automaticamente. Todos os campos permanecem editáveis.</span>
     <button id="botao-fechar-banner-contexto" type="button" style="border:1px solid #B8CAD4;background:#fff;color:#1B3556;border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:600;cursor:pointer;">Ocultar aviso</button>
@@ -1446,35 +1468,12 @@ button,.btn,.action{
       if (!arquivo) { statusCapa.textContent = ""; return; }
       statusCapa.textContent = "Preparando a imagem…";
       try {
-        if (arquivo.size > 12 * 1024 * 1024) throw new Error("A imagem passa de 12 MB.");
-        if (!/\.(png|jpe?g|webp)$/i.test(arquivo.name) && !/^image\/(png|jpeg|webp)$/.test(arquivo.type)) {
-          throw new Error("Escolha um arquivo JPG, PNG ou WebP.");
-        }
-        const url = URL.createObjectURL(arquivo);
-        try {
-          const imagem = new Image();
-          imagem.src = url;
-          await imagem.decode();
-          if (revisao !== revisaoCapa) return;
-          const quadro = document.createElement("canvas");
-          let escala = Math.min(1, 1280 / Math.max(imagem.naturalWidth, imagem.naturalHeight));
-          let capa;
-          do {
-            quadro.width = Math.max(1, Math.round(imagem.naturalWidth * escala));
-            quadro.height = Math.max(1, Math.round(imagem.naturalHeight * escala));
-            quadro.getContext("2d").drawImage(imagem, 0, 0, quadro.width, quadro.height);
-            capa = quadro.toDataURL("image/webp", 0.8);
-            if (!capa.startsWith("data:image/webp;")) capa = quadro.toDataURL("image/jpeg", 0.85);
-            escala *= 0.75;
-          } while (capa.length > 120_000);
-          if (!/^data:image\/(webp|jpeg);base64,/.test(capa)) throw new Error();
-          capaAtual = capa;
-          capaAlterada = true;
-          statusCapa.textContent = `Imagem selecionada: ${arquivo.name}. Clique em ${conteudoEditandoId ? "Salvar capa" : "Salvar material"}.`;
-          mostrarCapaCartao();
-        } finally {
-          URL.revokeObjectURL(url);
-        }
+        const capa = await prepararImagemCapa(arquivo);
+        if (revisao !== revisaoCapa) return;
+        capaAtual = capa;
+        capaAlterada = true;
+        statusCapa.textContent = `Imagem selecionada: ${arquivo.name}. Clique em ${conteudoEditandoId ? "Salvar capa" : "Salvar material"}.`;
+        mostrarCapaCartao();
       } catch (erro) {
         if (revisao === revisaoCapa) {
           statusCapa.textContent = erro.name === "Error" && erro.message
@@ -1489,6 +1488,110 @@ button,.btn,.action{
       }
     });
     iniciarCapaCartao();
+
+    async function prepararImagemCapa(arquivo) {
+      if (arquivo.size > 12 * 1024 * 1024) throw new Error("A imagem passa de 12 MB.");
+      if (!/\.(png|jpe?g|webp)$/i.test(arquivo.name) && !/^image\/(png|jpeg|webp)$/.test(arquivo.type)) {
+        throw new Error("Escolha um arquivo JPG, PNG ou WebP.");
+      }
+      const url = URL.createObjectURL(arquivo);
+      try {
+        const imagem = new Image();
+        imagem.src = url;
+        await imagem.decode();
+        const quadro = document.createElement("canvas");
+        let escala = Math.min(1, 1280 / Math.max(imagem.naturalWidth, imagem.naturalHeight));
+        let capa;
+        do {
+          quadro.width = Math.max(1, Math.round(imagem.naturalWidth * escala));
+          quadro.height = Math.max(1, Math.round(imagem.naturalHeight * escala));
+          quadro.getContext("2d").drawImage(imagem, 0, 0, quadro.width, quadro.height);
+          capa = quadro.toDataURL("image/webp", 0.8);
+          if (!capa.startsWith("data:image/webp;")) capa = quadro.toDataURL("image/jpeg", 0.85);
+          escala *= 0.75;
+        } while (capa.length > 120_000);
+        if (!/^data:image\/(webp|jpeg);base64,/.test(capa)) throw new Error("Não foi possível converter a imagem.");
+        return capa;
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    const areaApresentacao = document.getElementById("apresentacao-area");
+    const arquivoApresentacao = document.getElementById("apresentacao-arquivo");
+    const previaApresentacao = document.getElementById("apresentacao-previa");
+    const salvarApresentacao = document.getElementById("apresentacao-salvar");
+    const restaurarApresentacao = document.getElementById("apresentacao-restaurar");
+    const statusApresentacao = document.getElementById("apresentacao-status");
+    let imagemApresentacao = "";
+    let temImagemPersonalizada = false;
+    const refApresentacao = () => doc(db, "conteudo", "mirai-apresentacao-" + areaApresentacao.value);
+
+    function mostrarApresentacao(imagem) {
+      previaApresentacao.hidden = !imagem;
+      if (imagem) previaApresentacao.src = imagem;
+      else previaApresentacao.removeAttribute("src");
+    }
+
+    async function operarApresentacao(mensagem, operacao) {
+      areaApresentacao.disabled = arquivoApresentacao.disabled = true;
+      salvarApresentacao.disabled = restaurarApresentacao.disabled = true;
+      statusApresentacao.textContent = mensagem;
+      try {
+        await operacao();
+      } catch (erro) {
+        statusApresentacao.textContent = erro.code === "permission-denied"
+          ? "Esta conta não tem permissão para alterar a imagem."
+          : erro.message || "Não foi possível concluir a operação. Tente novamente.";
+      } finally {
+        areaApresentacao.disabled = arquivoApresentacao.disabled = false;
+        salvarApresentacao.disabled = !imagemApresentacao;
+        restaurarApresentacao.disabled = !temImagemPersonalizada;
+      }
+    }
+
+    async function carregarApresentacao() {
+      imagemApresentacao = "";
+      temImagemPersonalizada = false;
+      arquivoApresentacao.value = "";
+      mostrarApresentacao("");
+      await operarApresentacao("Carregando a imagem…", async () => {
+        const registro = await getDoc(refApresentacao());
+        const imagem = registro.data()?.imagem || "";
+        temImagemPersonalizada = Boolean(imagem);
+        mostrarApresentacao(imagem);
+        statusApresentacao.textContent = imagem ? "Imagem personalizada em uso." : "A Biblioteca usa a imagem original desta área.";
+      });
+    }
+
+    document.getElementById("capas-apresentacao").addEventListener("toggle", event => {
+      if (event.target.open && !areaApresentacao.disabled) carregarApresentacao();
+    });
+    areaApresentacao.addEventListener("change", carregarApresentacao);
+    arquivoApresentacao.addEventListener("change", async () => {
+      const arquivo = arquivoApresentacao.files[0];
+      if (!arquivo) return;
+      await operarApresentacao("Preparando a imagem…", async () => {
+        imagemApresentacao = await prepararImagemCapa(arquivo);
+        mostrarApresentacao(imagemApresentacao);
+        statusApresentacao.textContent = "Confira a prévia e clique em Salvar imagem.";
+      });
+    });
+    salvarApresentacao.addEventListener("click", () => operarApresentacao("Salvando…", async () => {
+      await setDoc(refApresentacao(), { imagem: imagemApresentacao, status: "rascunho", publicado: false });
+      temImagemPersonalizada = true;
+      imagemApresentacao = "";
+      arquivoApresentacao.value = "";
+      statusApresentacao.textContent = "Imagem salva. Atualize a Biblioteca para conferir.";
+    }));
+    restaurarApresentacao.addEventListener("click", () => operarApresentacao("Restaurando…", async () => {
+      await deleteDoc(refApresentacao());
+      temImagemPersonalizada = false;
+      imagemApresentacao = "";
+      arquivoApresentacao.value = "";
+      mostrarApresentacao("");
+      statusApresentacao.textContent = "Imagem original restaurada. Atualize a Biblioteca para conferir.";
+    }));
 
     function limparFormularioConteudo() {
       conteudoEditandoId = null;
@@ -2213,7 +2316,9 @@ button,.btn,.action{
       lista.innerHTML = "";
 
       itensPublicados = [];
-      snap.forEach(docSnap => itensPublicados.push({ id: docSnap.id, ...docSnap.data() }));
+      snap.forEach(docSnap => {
+        if (!docSnap.id.startsWith("mirai-apresentacao-")) itensPublicados.push({ id: docSnap.id, ...docSnap.data() });
+      });
       itensPublicados.sort((a, b) => chaveOrdem(a) - chaveOrdem(b));
       renderizarItensPublicados();
     }
