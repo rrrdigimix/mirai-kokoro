@@ -529,6 +529,10 @@ body {background:var(--fundo-bib)!important;color:var(--texto-bib)!important;fon
 header,.navblock,.controls,.contentCard,.quick a,.virtudeCard,.encontroCardBtn,.material-visual-card,.viewerBox,.viewerHead {
   background:var(--cartao-bib)!important;color:var(--texto-bib)!important;border-color:var(--linha-bib)!important;box-shadow:none!important
 }
+:root[data-tema-biblioteca="escuro"] header .brand img {
+  filter:grayscale(1) invert(1) brightness(3.5) sepia(.18);
+  mix-blend-mode:screen;
+}
 .head, #bibliotecaMain {max-width:1200px;margin-inline:auto}
 #bibliotecaMain {padding:22px clamp(16px,3vw,38px) 60px}
 .hero {margin:0 0 18px;padding:clamp(20px,4vw,46px);background:var(--cartao-bib)!important;border:1px solid var(--linha-bib);border-radius:22px}
