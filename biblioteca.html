@@ -1228,7 +1228,7 @@ function renderizarCardMaterial(x, areaItem, tipoSecao) {
   const contexto = formatarContextoMaterial(x);
   const orientacao = x.orientacaoCapa === "vertical" ? "vertical" : "horizontal";
   const capa = typeof x.capaCartao === "string" && x.capaCartao.length <= 120_000
-    && /^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(x.capaCartao) ? x.capaCartao : "";
+    && /^data:image\/(?:webp|jpeg);base64,[A-Za-z0-9+/=]+$/.test(x.capaCartao) ? x.capaCartao : "";
   return `<article class="resource material-visual-card"><div class="material-visual-thumb" data-orientacao="${orientacao}"><img ${capa ? `src="${capa}" loading="lazy"` : `data-capa="${escapeHtml(x.id)}" hidden`} alt=""><div class="material-thumb-editorial" ${capa ? "hidden" : ""}>Prévia em preparação</div></div><div class="material-visual-body"><div class="material-visual-context">${escapeHtml(contexto)} <span class="material-format-pill">${escapeHtml(rotuloFormato)}</span></div><h4 class="material-visual-title">${escapeHtml(x.titulo || "Material")}</h4><p class="material-visual-desc">${escapeHtml(x.descricao || "")}</p>${x.link ? `<button class="action material-visual-action" data-link="${link}" data-formato="${formatoArquivo}" data-titulo="${escapeHtml(x.titulo || "Material")}">${acao}</button>` : ""}</div></article>`;
 }
 
