@@ -887,6 +887,26 @@ button,.btn,.action{
     <small style="margin-top:4px;">Ao editar um material do Drive, escolha o novo arquivo aqui. O Admin atualiza o arquivo preservando o mesmo vínculo sempre que possível.</small>
   </label>
 
+  <fieldset id="campo-capa-cartao" style="margin:0;padding:14px;border:1px solid #d8d3c9;border-radius:12px;min-width:0">
+    <legend>Capa do cartão</legend>
+    <label class="mirai-field"><span>FORMATO DA MOLDURA</span>
+      <select id="select-orientacao-capa">
+        <option value="horizontal">Horizontal (16:9)</option>
+        <option value="vertical">Vertical (3:4)</option>
+      </select>
+    </label>
+    <label class="mirai-field"><span>IMAGEM DE CAPA (OPCIONAL)</span>
+      <input id="input-capa-cartao" type="file" accept="image/png,image/jpeg,image/webp" aria-describedby="medida-capa-cartao">
+      <small id="medida-capa-cartao"></small>
+    </label>
+    <div id="quadro-capa-cartao" style="display:grid;place-items:center;box-sizing:border-box;width:min(100%,260px);margin:12px auto;padding:8px;background:#f4f1ea;border:1px solid #c3ad8d;border-radius:9px">
+      <img id="preview-capa-cartao" alt="Prévia da capa" hidden style="width:100%;height:100%;min-height:0;object-fit:contain">
+      <small id="capa-cartao-padrao">Prévia padrão da Biblioteca</small>
+    </div>
+    <button id="remover-capa-cartao" class="mirai-btn" type="button" hidden>Usar prévia padrão</button>
+    <p id="status-capa-cartao" role="status"></p>
+  </fieldset>
+
   <label id="campo-logo-parceiro" class="mirai-field" style="display:none;">
     <span>ANEXAR LOGO DO PARCEIRO</span>
     <input id="input-logo-parceiro" type="file" accept="image/png,image/jpeg,image/webp">
@@ -1333,8 +1353,98 @@ button,.btn,.action{
     window.atualizarCategorias = function () { atualizarFormularioConteudo(); };
     async function carregarCategorias() { atualizarFormularioConteudo(); }
 
+    const formatoCapa = document.getElementById("select-orientacao-capa");
+    const arquivoCapa = document.getElementById("input-capa-cartao");
+    const imagemCapa = document.getElementById("preview-capa-cartao");
+    const removerCapa = document.getElementById("remover-capa-cartao");
+    const statusCapa = document.getElementById("status-capa-cartao");
+    let capaAtual = "";
+    let capaAlterada = false;
+    let formatoAlterado = false;
+    let lendoCapa = false;
+    let revisaoCapa = 0;
+
+    function mostrarCapaCartao() {
+      const vertical = formatoCapa.value === "vertical";
+      document.getElementById("quadro-capa-cartao").style.aspectRatio = vertical ? "3 / 4" : "16 / 9";
+      document.getElementById("medida-capa-cartao").textContent =
+        `Tamanho recomendado: ${vertical ? "900 × 1200" : "1280 × 720"} px. JPG, PNG ou WebP, até 12 MB.`;
+      if (capaAtual) imagemCapa.src = capaAtual;
+      else imagemCapa.removeAttribute("src");
+      imagemCapa.hidden = !capaAtual;
+      removerCapa.hidden = !capaAtual;
+      document.getElementById("capa-cartao-padrao").hidden = Boolean(capaAtual);
+    }
+
+    function iniciarCapaCartao(item = {}) {
+      revisaoCapa++;
+      lendoCapa = false;
+      capaAlterada = false;
+      formatoAlterado = false;
+      capaAtual = item.capaCartao || "";
+      formatoCapa.value = item.orientacaoCapa === "vertical" ? "vertical" : "horizontal";
+      arquivoCapa.value = "";
+      statusCapa.textContent = "";
+      mostrarCapaCartao();
+    }
+
+    formatoCapa.addEventListener("change", () => {
+      formatoAlterado = true;
+      mostrarCapaCartao();
+    });
+
+    removerCapa.addEventListener("click", () => {
+      iniciarCapaCartao({ orientacaoCapa: formatoCapa.value });
+      capaAlterada = true;
+      formatoAlterado = true;
+    });
+
+    arquivoCapa.addEventListener("change", async () => {
+      const arquivo = arquivoCapa.files[0];
+      const revisao = ++revisaoCapa;
+      lendoCapa = Boolean(arquivo);
+      if (!arquivo) { statusCapa.textContent = ""; return; }
+      statusCapa.textContent = "Preparando a imagem…";
+      try {
+        if (!/^image\/(png|jpeg|webp)$/.test(arquivo.type) || arquivo.size > 12 * 1024 * 1024) throw new Error();
+        const url = URL.createObjectURL(arquivo);
+        try {
+          const imagem = new Image();
+          imagem.src = url;
+          await imagem.decode();
+          if (revisao !== revisaoCapa) return;
+          const quadro = document.createElement("canvas");
+          let escala = Math.min(1, 1280 / Math.max(imagem.naturalWidth, imagem.naturalHeight));
+          let capa;
+          do {
+            quadro.width = Math.max(1, Math.round(imagem.naturalWidth * escala));
+            quadro.height = Math.max(1, Math.round(imagem.naturalHeight * escala));
+            quadro.getContext("2d").drawImage(imagem, 0, 0, quadro.width, quadro.height);
+            capa = quadro.toDataURL("image/webp", 0.8);
+            escala *= 0.75;
+          } while (capa.length > 120_000);
+          if (!/^data:image\/webp;base64,/.test(capa)) throw new Error();
+          capaAtual = capa;
+          capaAlterada = true;
+          statusCapa.textContent = "Capa pronta. Salve o material para aplicar.";
+          mostrarCapaCartao();
+        } finally {
+          URL.revokeObjectURL(url);
+        }
+      } catch {
+        if (revisao === revisaoCapa) statusCapa.textContent = "Escolha uma imagem JPG, PNG ou WebP válida de até 12 MB.";
+      } finally {
+        if (revisao === revisaoCapa) {
+          lendoCapa = false;
+          arquivoCapa.value = "";
+        }
+      }
+    });
+    iniciarCapaCartao();
+
     function limparFormularioConteudo() {
       conteudoEditandoId = null;
+      iniciarCapaCartao();
       document.getElementById("input-titulo").value = "";
       document.getElementById("input-descricao").value = "";
       document.getElementById("input-link").value = "";
@@ -2189,6 +2299,7 @@ button,.btn,.action{
       const item = itensPublicados.find(x => x.id === id);
       if (!item) return;
       conteudoEditandoId = id;
+      iniciarCapaCartao(item);
       const area = obterAreaClassificadaAdmin(item) || "Virtudes";
       const faixaResolvida = obterFaixaNormalizadaAdmin(item);
       document.getElementById("select-area").value = area;
@@ -2763,6 +2874,11 @@ button,.btn,.action{
     // ---------- FIM GESTÃO DEFINITIVA DOS ARQUIVOS DO DRIVE ----------
 
     document.getElementById("botao-adicionar-conteudo").addEventListener("click", async function () {
+      if (lendoCapa) return;
+      const camposCapa = {};
+      if (capaAlterada) camposCapa.capaCartao = capaAtual;
+      if (formatoAlterado) camposCapa.orientacaoCapa = formatoCapa.value;
+
       const area = document.getElementById("select-area").value;
       const faixaEtaria = document.getElementById("select-faixa").value;
       const subtipo = document.getElementById("select-subtipo").value;
@@ -2947,6 +3063,7 @@ button,.btn,.action{
       }
 
       const payload = {
+        ...camposCapa,
         area,
         faixaEtaria: (area === "Boas-vindas" || area === "Virtudes") ? faixaEtaria : "Todas",
         subtipo,
