@@ -835,8 +835,8 @@ button,.btn,.action{
     <label class="mirai-field"><span>Imagem de apresentação</span>
       <input type="file" id="apresentacao-arquivo" accept="image/png,image/jpeg,image/webp">
     </label>
-    <small>JPG, PNG ou WebP, até 12 MB. Use uma imagem vertical para Minhas Descobertas.</small>
-    <img id="apresentacao-previa" alt="Prévia da imagem de apresentação" hidden style="max-width:min(100%,260px);max-height:280px;margin:12px auto;object-fit:contain">
+    <small id="apresentacao-medida">Famílias e Respiração Consciente: 1280 × 720 px (16:9). JPG, PNG ou WebP, até 12 MB.</small>
+    <img id="apresentacao-previa" alt="Prévia da imagem de apresentação" hidden style="width:min(100%,320px);aspect-ratio:16/9;margin:12px auto;object-fit:contain;background:#f4f1e9;border:1px solid #d8d3c9;border-radius:8px">
     <div style="margin-top:12px">
       <button type="button" id="apresentacao-salvar" disabled>Salvar imagem</button>
       <button type="button" id="apresentacao-restaurar" disabled>Restaurar imagem original</button>
@@ -1551,6 +1551,11 @@ button,.btn,.action{
     }
 
     async function carregarApresentacao() {
+      const vertical = areaApresentacao.value === "descobertas";
+      document.getElementById("apresentacao-medida").textContent = vertical
+        ? "Minhas Descobertas: imagem vertical. JPG, PNG ou WebP, até 12 MB."
+        : "Famílias e Respiração Consciente: 1280 × 720 px (16:9). JPG, PNG ou WebP, até 12 MB.";
+      previaApresentacao.style.aspectRatio = vertical ? "9 / 16" : "16 / 9";
       imagemApresentacao = "";
       temImagemPersonalizada = false;
       arquivoApresentacao.value = "";
