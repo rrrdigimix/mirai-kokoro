@@ -681,8 +681,22 @@ header .logoutHint {display:inline-flex!important;align-items:center;min-height:
 
 </style>
 <style id="molduras-materiais">
-#bibliotecaMain .material-visual-card {align-self:start}
+#bibliotecaMain .material-visual-card {
+  align-self: stretch;
+  min-width: 0;
+}
+#bibliotecaMain .material-visual-card:hover {transform: none}
+#bibliotecaMain .material-visual-body {
+  align-self: stretch;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#bibliotecaMain #sections .section:has(> .material-visual-card:not([hidden])) {
+  grid-template-rows: auto;
+  grid-auto-rows: 1fr;
+}
 #bibliotecaMain .material-visual-thumb {
+  flex: none;
   display:grid;
   grid-template:minmax(0,1fr) / minmax(0,1fr);
   width:calc(100% - 24px);
