@@ -711,6 +711,69 @@ header .logoutHint {display:inline-flex!important;align-items:center;min-height:
   vertical-align:middle;
 }
 </style>
+<style id="biblioteca-tela-ampla">
+@media (min-width: 1280px) {
+  header .head,
+  #bibliotecaMain {
+    max-width: 1560px !important;
+    padding-inline: 40px !important;
+  }
+
+  header .head {
+    gap: 20px;
+  }
+
+  header .brand {
+    margin-inline-end: auto;
+  }
+
+  #bibliotecaMain .hero {
+    padding: 28px 40px !important;
+  }
+
+  #bibliotecaMain .hero p {
+    max-width: 65ch;
+  }
+
+  #bibliotecaMain .controls .controlWrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 16px;
+  }
+
+  #bibliotecaMain #labelBusca {
+    grid-column: 1 / -1;
+  }
+
+  #bibliotecaMain .controls .searchScope {
+    margin-top: 0;
+  }
+
+  #bibliotecaMain .vitrine-apoio {
+    display: grid;
+    grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+  }
+
+  #bibliotecaMain .vitrine-apoio img {
+    border: 1px solid var(--linha-bib);
+    border-radius: 10px;
+  }
+
+  #bibliotecaMain .vitrine-apoio > div {
+    align-self: stretch;
+    padding: 0;
+  }
+
+  #bibliotecaMain #sections .section,
+  #bibliotecaMain .virtues-showcase-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+</style>
 </head><body id="top">
 <div id="loginIntegrado" style="position:fixed;inset:0;z-index:1000;background:#FBFAF7;display:flex;align-items:center;justify-content:center;padding:24px;">
   <div style="width:min(420px,100%);background:#fff;border:1px solid #E4E0D7;border-radius:24px;padding:30px 26px;box-shadow:0 18px 55px rgba(30,48,59,.08);text-align:center;">
