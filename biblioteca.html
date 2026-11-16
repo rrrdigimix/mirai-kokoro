@@ -600,6 +600,7 @@ header,.navblock,.controls,.contentCard,.quick a,.virtudeCard,.encontroCardBtn,.
 #mdLista input {width:min(100%,42em);margin-block:6px}
 .mdAcoes {display:flex;flex-wrap:wrap;gap:8px;margin-block:8px}
 .mdMensagem {width:min(100%,42em);margin-block:8px}
+.mdStatusCopia {margin:4px 0}
 .vitrine-apoios {display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 .vitrine-apoio {
   min-width:0;display:flex;flex-direction:column;overflow:hidden;
@@ -986,25 +987,38 @@ Dentro do app, toquem em “Instalar app” para adicionar o ícone à tela inic
   campo.hidden = true;
   campo.rows = 6;
   campo.value = mensagem;
+  const statusCopia = document.createElement("p");
+  statusCopia.className = "mdStatusCopia";
+  statusCopia.setAttribute("role", "status");
+  statusCopia.hidden = true;
   const vigente = () => mdUid === uid && Math.min(acessoAte, mdLicencaAte) > Date.now();
 
   const copiar = document.createElement("button");
   copiar.type = "button";
   copiar.textContent = "Copiar convite";
   copiar.addEventListener("click", async () => {
+    statusCopia.hidden = false;
     if (!vigente()) {
-      mdStatus.textContent = "Este convite já venceu.";
+      campo.hidden = true;
+      statusCopia.textContent = "Este convite já venceu.";
       return;
     }
-    try {
-      await navigator.clipboard.writeText(mensagem);
-      mdStatus.textContent = "Convite copiado. Cole a mensagem na conversa da família.";
-    } catch {
-      campo.hidden = false;
-      campo.focus();
-      campo.select();
-      mdStatus.textContent = "Copie a mensagem selecionada e cole na conversa da família.";
+    campo.hidden = false;
+    campo.focus({ preventScroll: true });
+    campo.select();
+    campo.setSelectionRange(0, campo.value.length);
+    let copiado = false;
+    try { copiado = document.execCommand("copy"); } catch {}
+    if (!copiado && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(mensagem);
+        copiado = true;
+      } catch {}
     }
+    if (copiado) copiar.focus({ preventScroll: true });
+    statusCopia.textContent = copiado
+      ? "Convite copiado. Cole a mensagem na conversa da família."
+      : "Se a cópia automática estiver bloqueada, toque e segure no texto e escolha Copiar. No computador, use ⌘C ou Ctrl+C.";
   });
 
   const whatsapp = document.createElement("button");
@@ -1018,7 +1032,7 @@ Dentro do app, toquem em “Instalar app” para adicionar o ícone à tela inic
     window.open("https://wa.me/?text=" + encodeURIComponent(mensagem), "_blank", "noopener,noreferrer");
   });
   acoes.append(copiar, whatsapp);
-  return [acoes, campo];
+  return [acoes, statusCopia, campo];
 }
 
 async function mdListar(uid) {
