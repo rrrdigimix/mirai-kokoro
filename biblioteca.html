@@ -595,8 +595,10 @@ header,.navblock,.controls,.contentCard,.quick a,.virtudeCard,.encontroCardBtn,.
 #mdConvites summary {cursor:pointer;font-size:14px;font-weight:700;padding-block:6px}
 #mdEmitir {margin-top:14px;display:flex;flex-wrap:wrap;align-items:end;gap:10px}
 #mdEmitir[hidden],.vitrine-apoios[hidden],#mdConvites[hidden] {display:none!important}
-#mdLista {padding-left:18px}
-#mdLista li {margin:10px 0}
+#mdLista,#mdHistoricoLista {padding-left:18px}
+#mdLista li,#mdHistoricoLista li {margin:10px 0}
+#mdConvites #mdHistorico {padding:8px 0 0}
+#mdHistoricoPaginacao:not([hidden]) {display:flex;align-items:center;flex-wrap:wrap;gap:8px}
 .mdAcoes {display:flex;flex-wrap:wrap;gap:8px;margin-block:8px}
 .mdLink {width:min(100%,42em);margin-block:8px}
 .mdStatusCopia {margin:4px 0}
@@ -836,11 +838,21 @@ header .logoutHint {display:inline-flex!important;align-items:center;min-height:
   <h2>Gestão do acesso das famílias</h2>
   <p>Defina o período de acesso e encerre o convite quando o acompanhamento for interrompido ou concluído. O acesso depende da vigência da sua licença. Copie o link ou abra o WhatsApp com uma mensagem pronta.</p>
   <form id="mdEmitir">
-    <label>Último dia de acesso (horário do Japão) <input name="ate" type="date" required></label>
+    <label>Determine uma data de término de acesso <input name="ate" type="date" required></label>
     <button type="submit">Gerar convite</button>
   </form>
   <p id="mdStatus" role="status"></p>
   <ul id="mdLista"></ul>
+  <p id="mdSemAtivos" hidden>Nenhum convite ativo.</p>
+  <details id="mdHistorico" hidden>
+    <summary id="mdHistoricoTitulo">Histórico de convites</summary>
+    <ul id="mdHistoricoLista"></ul>
+    <div id="mdHistoricoPaginacao">
+      <button id="mdHistoricoAnterior" type="button">Anterior</button>
+      <span id="mdHistoricoPagina" role="status"></span>
+      <button id="mdHistoricoProxima" type="button">Próxima</button>
+    </div>
+  </details>
 </details></section>
 <article class="contentCard"><div class="meta" id="pageMeta"></div><h2 id="pageTitle"></h2><p class="desc" id="pageDesc"></p><div id="vitrineVirtudesContainer" class="vitrineVirtudesContainer hide"></div><img id="areaIlustrada" alt="" hidden><nav class="quick" id="quick"></nav><div id="sections"></div><div class="note" id="firebaseStatus">Conectando à Biblioteca Mirai…</div></article></main>
 
@@ -960,6 +972,17 @@ const mdPainel = document.getElementById("mdConvites");
 const mdForm = document.getElementById("mdEmitir");
 const mdStatus = document.getElementById("mdStatus");
 const mdLista = document.getElementById("mdLista");
+const mdSemAtivos = document.getElementById("mdSemAtivos");
+const mdHistorico = document.getElementById("mdHistorico");
+const mdHistoricoTitulo = document.getElementById("mdHistoricoTitulo");
+const mdHistoricoLista = document.getElementById("mdHistoricoLista");
+const mdHistoricoPagina = document.getElementById("mdHistoricoPagina");
+const mdHistoricoAnterior = document.getElementById("mdHistoricoAnterior");
+const mdHistoricoProxima = document.getElementById("mdHistoricoProxima");
+const mdHistoricoPaginacao = document.getElementById("mdHistoricoPaginacao");
+const mdPorPagina = 10;
+let mdHistoricoItens = [];
+let mdPaginaAtual = 0;
 let mdUid = null;
 let mdLicencaAte = 0;
 const mdDetalhes = document.getElementById("mdDetalhes");
@@ -968,6 +991,32 @@ const mdAppUrl = document.querySelector('meta[name="mirai-descobertas-origem"]')
 function mdColecao(uid) {
   return collection(db, "clientes", uid, "convitesDescobertas");
 }
+
+function mdMostrarHistorico() {
+  const total = mdHistoricoItens.length;
+  mdHistorico.hidden = total === 0;
+  mdHistoricoTitulo.textContent = `Histórico de convites (${total})`;
+  const inicio = mdPaginaAtual * mdPorPagina;
+  const fim = Math.min(inicio + mdPorPagina, total);
+  mdHistoricoLista.replaceChildren(...mdHistoricoItens.slice(inicio, fim).map(texto => {
+    const item = document.createElement("li");
+    item.textContent = texto;
+    return item;
+  }));
+  mdHistoricoPaginacao.hidden = total <= mdPorPagina;
+  mdHistoricoAnterior.disabled = inicio === 0;
+  mdHistoricoProxima.disabled = fim >= total;
+  mdHistoricoPagina.textContent = total ? `${inicio + 1}–${fim} de ${total}` : "";
+}
+
+mdHistoricoAnterior.addEventListener("click", () => {
+  mdPaginaAtual -= 1;
+  mdMostrarHistorico();
+});
+mdHistoricoProxima.addEventListener("click", () => {
+  mdPaginaAtual += 1;
+  mdMostrarHistorico();
+});
 
 function mdLinkConvite(origem, uid, codigo) {
   const link = new URL(origem);
@@ -1052,16 +1101,16 @@ async function mdListar(uid) {
   const convites = await getDocs(mdColecao(uid));
   if (mdUid !== uid) return;
   mdLista.replaceChildren();
+  const historico = [];
+  const agora = Date.now();
   const ordenados = [...convites.docs].sort((a, b) => b.data().criadoEm.toMillis() - a.data().criadoEm.toMillis());
   for (const convite of ordenados) {
     const dados = convite.data();
     const item = document.createElement("li");
-    const dia = new Date(dados.acessoAte.toMillis() - 1).toLocaleDateString("pt-BR", { timeZone: "Asia/Tokyo" });
+    const dia = new Date(dados.acessoAte.toMillis() - 1).toLocaleDateString("pt-BR");
     item.textContent = `Convite ${convite.id.slice(0, 8)} · até ${dia}`;
-    if (dados.revogado) {
-      item.append(" · encerrado");
-    } else if (dados.acessoAte.toMillis() <= Date.now()) {
-      item.append(" · vencido");
+    if (dados.revogado || dados.acessoAte.toMillis() <= agora) {
+      historico.push(`${item.textContent} · ${dados.revogado ? "encerrado" : "vencido"}`);
     } else {
       if (mdLicencaAte <= Date.now()) item.append(" · licença vencida ou indisponível");
       const link = mdAppUrl ? mdLinkConvite(mdAppUrl, uid, convite.id) : null;
@@ -1081,9 +1130,13 @@ async function mdListar(uid) {
       });
       if (link && mdLicencaAte > Date.now()) item.append(...mdAcoesConvite(link, uid, dados.acessoAte.toMillis()));
       item.append(" ", encerrar);
+      mdLista.append(item);
     }
-    mdLista.append(item);
   }
+  mdSemAtivos.hidden = mdLista.childElementCount > 0;
+  mdHistoricoItens = historico;
+  mdPaginaAtual = 0;
+  mdMostrarHistorico();
 }
 
 mdForm.addEventListener("submit", async event => {
@@ -1091,7 +1144,8 @@ mdForm.addEventListener("submit", async event => {
   const uid = mdUid;
   if (!uid || !mdAppUrl) return;
   const data = mdForm.elements.ate.value;
-  const acessoAte = new Date(Date.parse(data + "T00:00:00Z") + 15 * 60 * 60 * 1000);
+  const acessoAte = new Date(data + "T00:00:00");
+  acessoAte.setDate(acessoAte.getDate() + 1);
   if (!Number.isFinite(+acessoAte) || +acessoAte <= Date.now()) {
     mdStatus.textContent = "Informe uma data de término futura.";
     return;
@@ -1120,6 +1174,11 @@ onAuthStateChanged(auth, async (user) => {
   mdDetalhes.hidden = true;
   mdPainel.hidden = true;
   mdLista.replaceChildren();
+  mdSemAtivos.hidden = true;
+  mdHistorico.open = false;
+  mdHistoricoItens = [];
+  mdPaginaAtual = 0;
+  mdMostrarHistorico();
   mdStatus.textContent = "";
   if (!user) {
     document.getElementById("bibliotecaMain").style.visibility = "hidden";
