@@ -796,6 +796,38 @@ header .logoutHint {display:inline-flex!important;align-items:center;min-height:
   }
 }
 </style>
+<style>
+
+.virtue-showcase-card .virtue-card-cover {
+  flex: none;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  container-type: inline-size;
+  background: #fae7cf !important;
+}
+.virtue-showcase-card .virtue-card-cover img {
+  object-fit: contain;
+}
+.virtue-cover-name {
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 47%;
+  color: #153552;
+  overflow-wrap: anywhere;
+  font: 700 18px/1.05 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(14px, 7.7cqw, 42px);
+}
+.virtue-cover-name-long {
+  font-size: clamp(13px, 6.3cqw, 32px);
+}
+.virtue-card-meaning {
+  font: 500 0.88rem/1.5 Montserrat, Arial, sans-serif;
+  color: var(--texto-bib, #153552);
+  margin-bottom: 12px;
+}
+</style>
 </head><body id="top">
 <div id="loginIntegrado" style="position:fixed;inset:0;z-index:1000;background:#FBFAF7;display:flex;align-items:center;justify-content:center;padding:24px;">
   <div style="width:min(420px,100%);background:#fff;border:1px solid #E4E0D7;border-radius:24px;padding:30px 26px;box-shadow:0 18px 55px rgba(30,48,59,.08);text-align:center;">
@@ -1337,6 +1369,30 @@ const virtudes = {
   "15 anos": []
 };
 
+const significadoVirtudes = {
+  "Humildade": "Reconhecer que sempre podemos aprender e pedir ajuda.",
+  "Abnegação": "Abrir mão de uma vontade sua em alguns momentos para ajudar alguém.",
+  "Perseverança": "Continuar tentando, um passo de cada vez, mesmo quando é difícil.",
+  "Responsabilidade": "Cumprir os combinados e cuidar da sua parte.",
+  "Paciência": "Dar tempo a você e aos outros, mesmo quando dá vontade de apressar.",
+  "Honestidade": "Dizer a verdade e reconhecer os próprios erros.",
+  "Não Julgamento": "Escutar e procurar entender a história antes de tirar conclusões.",
+  "Gratidão": "Perceber e agradecer as coisas boas e os cuidados que você recebe.",
+  "Bom Humor": "Encontrar alegria nas pequenas coisas e brincar com respeito.",
+  "Otimismo": "Enxergar possibilidades e acreditar que as coisas podem melhorar.",
+  "Cuidado com o Corpo": "Perceber o que seu corpo precisa e cuidar dele no dia a dia.",
+  "Amor à Natureza e aos Animais": "Cuidar das plantas e dos animais e respeitar onde vivem.",
+  "Ajuda ao Próximo": "Perceber quando alguém precisa de ajuda e oferecer o que você pode.",
+  "Perdão": "Dar tempo ao que você sente e seguir em frente, respeitando seus limites.",
+  "Reconciliação": "Conversar e, quando os dois quiserem, encontrar um jeito de retomar a convivência.",
+  "Honrar a Família": "Valorizar os cuidados da sua família e contribuir com o que você pode.",
+  "Individuação": "Descobrir seus gostos e expressar seu próprio jeito de ser.",
+  "Utilidade": "Usar o que você sabe fazer para contribuir.",
+  "Igualdade": "Reconhecer que todas as pessoas têm o mesmo valor e merecem respeito.",
+  "Fraternidade": "Acolher, incluir e colaborar com quem está ao seu lado.",
+  "Busca do Melhoramento": "Perceber onde você pode melhorar e praticar aos poucos."
+};
+
 const estadoSalvo = (() => { try { return JSON.parse(sessionStorage.getItem("miraiBibliotecaEstado") || "{}"); } catch (_) { return {}; } })();
 const imagensApresentacao = new Map(
   [...document.querySelectorAll("img[data-apresentacao]")].map(img => [img.dataset.apresentacao, { img, original: img.dataset.capaPadrao || img.src }])
@@ -1651,13 +1707,13 @@ function renderizarVitrineVirtudes() {
   const lista = virtudes[state.idade] || [];
 
   if (!state.virtudeAberta) {
-    const cardsHtml = lista.map((v, idx) => {
+    const cardsHtml = lista.map(v => {
       const qtd1 = contarMateriaisVirtudeEncontro(state.idade, v, "1");
       const qtd2 = contarMateriaisVirtudeEncontro(state.idade, v, "2");
       const total = qtd1 + qtd2;
       return `<button type="button" class="virtudeCard virtue-showcase-card${total ? "" : " empty-virtue"}" data-virtude="${escapeHtml(v)}">
-        <span class="virtue-card-cover"><span class="virtue-monogram" aria-hidden="true"><span class="virtue-monogram-letter">${escapeHtml(v.charAt(0))}</span></span><span class="virtue-count-pill">${total} material(is)</span></span>
-        <span class="virtue-card-body"><span class="virtue-card-eyebrow">VIRTUDES · ${escapeHtml(state.idade)}</span><span class="virtue-card-title">${escapeHtml(v)}</span><span class="virtue-card-meta-line">Encontro 1: ${qtd1} · Encontro 2: ${qtd2}</span><span class="virtue-card-footer"><span>${total ? "Abrir encontros e materiais" : "Ver estrutura dos encontros"}</span><span aria-hidden="true">→</span></span></span></button>`;
+        <span class="virtue-card-cover" aria-hidden="true"><img src="./virtude-capa-${slug(v)}.webp" width="800" height="450" loading="lazy" decoding="async" alt="">${v === "Individuação" ? "" : `<span class="virtue-cover-name${v.length > 18 ? " virtue-cover-name-long" : ""}">${escapeHtml(v)}</span>`}</span>
+        <span class="virtue-card-body"><span class="virtue-card-eyebrow">VIRTUDES · ${escapeHtml(state.idade)}</span><span class="virtue-card-title">${escapeHtml(v)}</span><span class="virtue-card-meaning">${escapeHtml(significadoVirtudes[v])}</span><span class="virtue-card-meta-line">Encontro 1: ${qtd1} · Encontro 2: ${qtd2}</span><span class="virtue-card-footer"><span>${total ? "Abrir encontros e materiais" : "Ver estrutura dos encontros"}</span><span aria-hidden="true">→</span></span></span></button>`;
     }).join("");
 
     container.innerHTML = `<div class="vitrineWrap" id="vitrineGradeVirtudes">
