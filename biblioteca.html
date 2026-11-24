@@ -594,10 +594,16 @@ header,.navblock,.controls,.contentCard,.quick a,.virtudeCard,.encontroCardBtn,.
 #mdConvites details {padding:12px 22px;border-top:1px solid var(--linha-bib)}
 #mdConvites summary {cursor:pointer;font-size:14px;font-weight:700;padding-block:6px}
 #mdAceite,#mdEmitir {margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(215px,100%),1fr));align-items:end;gap:10px}
-#mdAceite p,#mdAceite label,#mdReferenciaAjuda {grid-column:1/-1}
+#mdAceite p,#mdAceite label,#mdNomeFamiliaAjuda {grid-column:1/-1}
 #mdAceite button,#mdEmitir button {justify-self:start}
 #mdAceite input[type=checkbox] {width:auto}
 #mdAceite[hidden],#mdEmitir[hidden],.vitrine-apoios[hidden],#mdConvites[hidden] {display:none!important}
+#mdRegulamento {width:min(92vw,44rem);max-width:none;max-height:min(86dvh,48rem);padding:0;border:1px solid #c8c3b9;border-radius:16px;background:#fbf6ea;color:#173a59;overflow:hidden}
+#mdRegulamento::backdrop {background:#0c2137b8}
+#mdRegulamento header {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px}
+#mdRegulamento iframe {width:100%;height:min(66dvh,38rem);display:block;border:0;border-top:1px solid #d8d0c2;background:#fbf6ea}
+#mdRegulamento h2 {font-size:clamp(1rem,4vw,1.35rem);margin:0}
+#mdRegulamento button {color:#fff;background:#173a59;white-space:normal}
 #mdLista,#mdHistoricoLista {padding-left:18px}
 #mdLista li,#mdHistoricoLista li {margin:10px 0}
 #mdConvites #mdHistorico {padding:8px 0 0}
@@ -872,18 +878,19 @@ header .logoutHint {display:inline-flex!important;align-items:center;min-height:
   <details id="mdDetalhes" hidden><summary>Gerenciar convites</summary>
   <h2>Gestão do acesso das famílias</h2>
   <p><a id="mdConhecer" target="_blank" rel="noopener">Conhecer o app e ver o passo a passo</a></p>
+  <p><button id="mdAbrirRegulamento" type="button" aria-haspopup="dialog">Regulamento dos Facilitadores</button></p>
   <p>Combine com a família até quando o app ficará disponível. Você pode encerrar o acesso antes, se precisar.</p>
   <p id="mdLicencaInfo"></p>
   <form id="mdAceite" hidden>
-    <p>Antes do primeiro convite, leia os <a id="mdTermos" target="_blank" rel="noopener">Termos de Uso</a>, a <a id="mdPrivacidade" target="_blank" rel="noopener">Política de Privacidade</a> e o <a href="./regulamento-descobertas.html" target="_blank" rel="noopener">Regulamento dos Facilitadores</a>.</p>
+    <p>Antes do primeiro convite, leia os <a id="mdTermos" target="_blank" rel="noopener">Termos de Uso</a>, a <a id="mdPrivacidade" target="_blank" rel="noopener">Política de Privacidade</a> e o Regulamento dos Facilitadores.</p>
     <label><input name="aceito" type="checkbox" required> Li e aceito os documentos para emitir convites.</label>
     <button type="submit">Registrar aceite</button>
   </form>
   <form id="mdEmitir" hidden>
     <label>Data de início (opcional, começa hoje) <input name="inicio" type="date"></label>
     <label>Determine uma data de término de acesso <input name="ate" type="date" required></label>
-    <label>Referência interna (opcional, até 6 dígitos) <input name="referencia" type="text" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" autocomplete="off" aria-describedby="mdReferenciaAjuda"></label>
-  <p id="mdReferenciaAjuda">Use um número criado por você para reconhecer o convite, como 001. Ele aparece só para você na Biblioteca.</p>
+    <label>Nome da família (opcional) <input name="nomeFamilia" type="text" maxlength="60" autocomplete="off" aria-describedby="mdNomeFamiliaAjuda"></label>
+    <p id="mdNomeFamiliaAjuda">Use um nome curto, como “Família Silva”. Ele aparece só para você na Biblioteca.</p>
     <button type="submit">Gerar convite</button>
   </form>
   <p id="mdStatus" role="status"></p>
@@ -898,6 +905,13 @@ header .logoutHint {display:inline-flex!important;align-items:center;min-height:
       <button id="mdHistoricoProxima" type="button">Próxima</button>
     </div>
   </details>
+  <dialog id="mdRegulamento" aria-labelledby="mdRegulamentoTitulo">
+    <header>
+      <h2 id="mdRegulamentoTitulo">Regulamento dos Facilitadores</h2>
+      <form method="dialog"><button type="submit" autofocus>Voltar aos convites</button></form>
+    </header>
+    <iframe title="Texto do Regulamento dos Facilitadores" data-src="./regulamento-descobertas.html"></iframe>
+  </dialog>
 </details></section>
 <article class="contentCard"><div class="meta" id="pageMeta"></div><h2 id="pageTitle"></h2><p class="desc" id="pageDesc"></p><div id="vitrineVirtudesContainer" class="vitrineVirtudesContainer hide"></div><img id="areaIlustrada" alt="" hidden><nav class="quick" id="quick"></nav><div id="sections"></div><div class="note" id="firebaseStatus">Conectando à Biblioteca Mirai…</div></article></main>
 
@@ -1037,6 +1051,15 @@ const mdAppUrl = document.querySelector('meta[name="mirai-descobertas-origem"]')
 const mdVersao = "v1";
 let mdAceito = false;
 let mdPodeEmitir = false;
+const mdRegulamento = document.getElementById("mdRegulamento");
+const mdAbrirRegulamento = document.getElementById("mdAbrirRegulamento");
+
+mdAbrirRegulamento.addEventListener("click", () => {
+  const quadro = mdRegulamento.querySelector("iframe");
+  if (!quadro.hasAttribute("src")) quadro.src = quadro.dataset.src;
+  mdRegulamento.showModal();
+});
+mdRegulamento.addEventListener("close", () => mdAbrirRegulamento.focus());
 
 if (mdAppUrl) {
   document.getElementById("mdConhecer").href = new URL("/conhecer.html", mdAppUrl);
@@ -1186,7 +1209,10 @@ Dentro do app, toquem em “Instalar app” para adicionar o ícone à tela inic
 async function mdListar(uid) {
   const [convites, referencias] = await Promise.all([getDocs(mdColecao(uid)), getDocs(mdReferencias(uid))]);
   if (mdUid !== uid) return;
-  const rotulos = new Map(referencias.docs.map(ref => [ref.id, ref.data().referencia]));
+  const rotulos = new Map(referencias.docs.map(ref => {
+    const { nomeFamilia, referencia } = ref.data();
+    return [ref.id, nomeFamilia || (referencia ? `Ref. ${referencia}` : "")];
+  }));
   mdLista.replaceChildren();
   const historico = [];
   const agora = Date.now();
@@ -1196,8 +1222,8 @@ async function mdListar(uid) {
     const item = document.createElement("li");
     const fim = dados.acessoAte.toMillis();
     const inicio = dados.inicioEm?.toMillis() || 0;
-    const referencia = rotulos.get(convite.id);
-    item.textContent = `Convite ${convite.id.slice(0, 8)}${referencia ? ` · Ref. ${referencia}` : ""} · até ${mdData(fim - 1)}`;
+    const nome = rotulos.get(convite.id);
+    item.textContent = `${nome ? `${nome} · ` : ""}Convite ${convite.id.slice(0, 8)} · até ${mdData(fim - 1)}`;
     if (dados.revogado || dados.acessoAte.toMillis() <= agora) {
       historico.push(`${item.textContent} · ${dados.revogado ? "encerrado" : "vencido"}`);
     } else {
@@ -1209,7 +1235,7 @@ async function mdListar(uid) {
       encerrar.type = "button";
       encerrar.textContent = "Encerrar acesso";
       encerrar.addEventListener("click", async () => {
-        if (mdUid !== uid || !confirm(`Encerrar agora o acesso do convite ${convite.id.slice(0, 8)}${referencia ? ` (ref. ${referencia})` : ""}? O link deixará de funcionar.`)) return;
+        if (mdUid !== uid || !confirm(`Encerrar agora o acesso do convite ${convite.id.slice(0, 8)}${nome ? ` (${nome})` : ""}? O link deixará de funcionar.`)) return;
         encerrar.disabled = true;
         try {
           await updateDoc(convite.ref, { revogado: true });
@@ -1238,7 +1264,7 @@ mdForm.addEventListener("submit", async event => {
   const data = mdForm.elements.ate.value;
   const dataInicio = mdForm.elements.inicio.value;
   const inicioEm = dataInicio ? new Date(dataInicio + "T00:00:00") : null;
-  const referencia = mdForm.elements.referencia.value;
+  const nomeFamilia = mdForm.elements.nomeFamilia.value.trim();
   const acessoAte = new Date(data + "T00:00:00");
   acessoAte.setDate(acessoAte.getDate() + 1);
   if (!Number.isFinite(+acessoAte) || +acessoAte <= Date.now()) {
@@ -1249,7 +1275,10 @@ mdForm.addEventListener("submit", async event => {
     mdStatus.textContent = "Escolha um início até a data de término e dentro da vigência da licença.";
     return;
   }
-  if (referencia && !/^[0-9]{1,6}$/.test(referencia)) return;
+  if (nomeFamilia.length > 60) {
+    mdStatus.textContent = "Use um nome de família com até 60 caracteres.";
+    return;
+  }
   const fimDoConvite = new Date(Math.min(+acessoAte, mdLicencaAte));
   const botao = mdForm.querySelector("button");
   botao.disabled = true;
@@ -1257,7 +1286,7 @@ mdForm.addEventListener("submit", async event => {
     const codigo = Array.from(crypto.getRandomValues(new Uint8Array(32)), n => n.toString(16).padStart(2, "0")).join("");
     const lote = writeBatch(db);
     lote.set(doc(mdColecao(uid), codigo), { criadoEm: serverTimestamp(), acessoAte: fimDoConvite, revogado: false, ...(inicioEm ? { inicioEm } : {}) });
-    if (referencia) lote.set(doc(mdReferencias(uid), codigo), { referencia });
+    if (nomeFamilia) lote.set(doc(mdReferencias(uid), codigo), { nomeFamilia });
     await lote.commit();
     if (mdUid === uid) {
       mdForm.reset();
